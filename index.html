@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote Demos</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: #0d1b2a; color: #fff; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center; padding: 40px 20px;
+    }
+    .wrap { width: 100%; max-width: 560px; text-align: center; }
+    .badge {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.16em;
+      color: rgba(245,158,11,0.85); margin-bottom: 14px;
+    }
+    h1 { font-size: 30px; font-weight: 800; letter-spacing: -0.6px; margin-bottom: 8px; }
+    .sub { font-size: 14px; color: rgba(255,255,255,0.4); margin-bottom: 32px; line-height: 1.6; }
+    .demos { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+    a.demo {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-radius: 14px; text-decoration: none;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      transition: background 0.15s, border-color 0.15s, transform 0.15s;
+    }
+    a.demo:hover { background: rgba(30,77,150,0.18); border-color: rgba(37,99,235,0.5); transform: translateY(-1px); }
+    .demo-name { font-size: 15px; font-weight: 700; color: #fff; }
+    .demo-meta { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .arrow { color: #2563eb; font-size: 18px; }
+    .foot { margin-top: 30px; font-size: 12px; color: rgba(255,255,255,0.28); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="badge">Instant Quote Widget</div>
+    <h1>Live Demos</h1>
+    <p class="sub">Each link is a self-contained demo of the instant-quote chat widget,<br>tailored to a single business.</p>
+    <div class="demos">
+      <a class="demo" href="/template">
+        <div>
+          <div class="demo-name">Apex Roofing</div>
+          <div class="demo-meta">Roofing · Guttering · Leadwork — master template</div>
+        </div>
+        <span class="arrow">→</span>
+      </a>
+      <!-- Add a new line per client, e.g.:
+      <a class="demo" href="/clientname">
+        <div>
+          <div class="demo-name">Client Name</div>
+          <div class="demo-meta">Trade · short description</div>
+        </div>
+        <span class="arrow">→</span>
+      </a>
+      -->
+    </div>
+    <div class="foot">Built by Pirint Visuals</div>
+  </div>
+</body>
+</html>
