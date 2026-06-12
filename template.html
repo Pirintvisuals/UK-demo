@@ -214,12 +214,16 @@
     @media (max-width: 480px) {
       body { overflow-x: hidden; }
       #widget-root { right: 12px; left: 12px; bottom: 12px; gap: 10px; }
+      /* Open chat = full-screen sheet (reliable on real phones, ignores address-bar height) */
       .chat-panel {
+        position: fixed;
+        inset: 0;
         width: 100%;
-        height: calc(100vh - 104px);
-        height: calc(100dvh - 104px);
+        height: 100vh;
+        height: 100dvh;
         max-height: none;
-        border-radius: 18px;
+        border-radius: 0;
+        z-index: 100000;
       }
       .tooltip { max-width: calc(100vw - 96px); white-space: normal; text-align: right; }
       .modal-overlay { padding: 12px; }
