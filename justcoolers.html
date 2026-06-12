@@ -196,6 +196,22 @@
     }
     .modal-card::-webkit-scrollbar { width: 3px; }
     .modal-card::-webkit-scrollbar-thumb { background: rgba(27,166,214,0.4); border-radius: 10px; }
+
+    /* ── Mobile ──────────────────────────────────────────────────── */
+    @media (max-width: 480px) {
+      body { overflow-x: hidden; }
+      #widget-root { right: 12px; left: 12px; bottom: 12px; gap: 10px; }
+      .chat-panel {
+        width: 100%;
+        height: calc(100vh - 104px);
+        height: calc(100dvh - 104px);
+        max-height: none;
+        border-radius: 18px;
+      }
+      .tooltip { max-width: calc(100vw - 96px); white-space: normal; text-align: right; }
+      .modal-overlay { padding: 12px; }
+      .modal-card { max-height: calc(100dvh - 24px); }
+    }
   </style>
 </head>
 <body>
