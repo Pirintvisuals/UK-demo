@@ -297,7 +297,12 @@ function buildModal() {
   const overlay = document.createElement('div')
   overlay.className = 'modal-overlay'
   overlay.onclick = e => { if (e.target === overlay) { showModal = false; render() } }
-  const now = new Date().toLocaleTimeString(CONFIG.currency.locale, { hour:'2-digit', minute:'2-digit' })
+  // Out-of-hours framing — the big selling point for trades: the bot captured a
+  // qualified lead while the owner couldn't answer. Override per demo with
+  // CONFIG.leadTime / CONFIG.ownerBenefit if you want different wording.
+  const leadTime = CONFIG.leadTime || '9:48pm'
+  const ownerBenefit = CONFIG.ownerBenefit ||
+    `Captured and qualified at ${esc(leadTime)}, while you were on a job. You just wake up to a lead that's ready to quote.`
 
   const jobTags = EST.jobTags.map(t =>
     `<span style="font-size:12px;font-weight:600;color:var(--ink);background:var(--tint);padding:4px 12px;border-radius:20px">${esc(t)}</span>`
@@ -345,7 +350,13 @@ function buildModal() {
             <div style="width:8px;height:8px;border-radius:50%;background:var(--dot);box-shadow:0 0 0 3px rgba(255,255,255,0.18)"></div>
             <span style="color:#fff;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.1em">New ${esc(EST.scoreLabel)}</span>
           </div>
-          <span style="color:#cfe7d8;font-size:11px;font-weight:500">${now}</span>
+          <span style="color:#cfe7d8;font-size:11px;font-weight:500">${esc(leadTime)}</span>
+        </div>
+
+        <!-- Out-of-hours benefit — the line that lands with the owner -->
+        <div style="padding:11px 16px;background:linear-gradient(135deg,var(--tint),var(--tint2));border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px">
+          <span style="font-size:17px;line-height:1">🌙</span>
+          <span style="font-size:12px;color:var(--ink);font-weight:600;line-height:1.4">${ownerBenefit}</span>
         </div>
 
         <div style="padding:16px 16px 12px;border-bottom:1px solid var(--line)">
