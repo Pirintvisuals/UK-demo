@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote Demo</title>
+  <!-- Client sample · Splash Bathrooms · family-run bathroom specialists, Yorkshire (since 1998).
+       Data-only file: engine + styles live in /quote-agent.js + /quote-agent.css. -->
+  <link rel="stylesheet" href="/quote-agent.css">
+</head>
+<body>
+<div class="page-center" id="hero"></div>
+<div id="widget-root"></div>
+
+<script>
+// 1. THEME — black + steel-blue water (from the splash logo)
+const THEME = {
+  bg:'#0d1012', dark:'#16323f', mid:'#2d6c8a', brand:'#4a9fc4', bright:'#8fcfe6',
+  dot:'#a9dcee', chatBg:'#f1f8fb', tint:'#e2f1f8', tint2:'#eef8fc', line:'#d8e9f1',
+  ink:'#1f6285', inkSoft:'#2d7ba1', ring:'rgba(74,159,196,0.40)', cta:'#f59e0b', cta2:'#d97706',
+}
+
+// 2. CONFIG — company identity (Calendly link is fixed for every sample)
+const CONFIG = {
+  brand: {
+    name: 'Splash Bathrooms',
+    sub: 'Bathroom Design · Supply · Installation',
+    tagline: 'Yorkshire · Trusted since 1998',
+    initial: 'SB',
+    logoSrc: 'splash-bathrooms-logo.jpg',
+    fbHandle: '',
+    online: 'Online · Replies in seconds',
+  },
+  niche: 'new bathroom',
+  tooltip: 'See how it works ▶',
+  currency: { symbol: '£', locale: 'en-GB' },
+  sendToOwnerLabel: 'Send to owner →',
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
+  ctaTitle: 'This is just a sample.',
+  ctaText: 'Want this on your own site, capturing real leads like this around the clock?',
+  ctaButton: 'Book a 15-min call →',
+}
+
+// 3. MSGS — the conversation (plays itself, always the same single route)
+const MSGS = [
+  { r:'agent', t:"Hi! Would you like a quote for your new bathroom?" },
+  { r:'user',  t:"Yes please, ours is really dated" },
+  { r:'agent', t:"Lovely. Is it a full refit, or just updating a few bits?" },
+  { r:'user',  t:"A full refit, rip it all out" },
+  { r:'agent', t:"Got it. Roughly what size is the bathroom?" },
+  { r:'user',  t:"About 2.4m by 2m" },
+  { r:'agent', t:"Is it staying the same layout, or moving things around?" },
+  { r:'user',  t:"Taking the bath out for a big walk-in shower" },
+  { r:'agent', t:"Nice. For the shower, electric or a thermostatic mixer?" },
+  { r:'user',  t:"A thermostatic mixer, mains pressure" },
+  { r:'agent', t:"Would you like the walls fully tiled, or part-tiled?" },
+  { r:'user',  t:"Fully tiled please, floor and walls" },
+  { r:'agent', t:"New toilet and a basin/vanity unit as well?" },
+  { r:'user',  t:"Yes, a wall-hung toilet and a vanity unit" },
+  { r:'agent', t:"Any underfloor heating or a heated towel rail?" },
+  { r:'user',  t:"A heated towel rail would be lovely" },
+  { r:'agent', t:"What's your postcode?" },
+  { r:'user',  t:"LS21 1AB" },
+  { r:'agent', t:"Roughly what budget did you have in mind?" },
+  { r:'user',  t:"Around £6,000 to £8,000" },
+  { r:'agent', t:"And your name?" },
+  { r:'user',  t:"Emma Wright" },
+  { r:'agent', t:"Thanks Emma — best number to reach you on?" },
+  { r:'user',  t:"07700 900742" },
+  { r:'agent', t:"And your email?" },
+  { r:'user',  t:"emma.wright@gmail.com" },
+  { r:'agent', t:"Thanks Emma — putting your bathroom quote together now." },
+  { r:'estimate' }
+]
+
+// 4. EST — itemised quote + lead card (items must sum to EST.mid)
+const EST = {
+  lower: 6_400, mid: 7_000, upper: 7_900,
+  status: 'PRIORITY',
+  items: [
+    { label:'Strip out & dispose old bathroom',          amt:   480 },
+    { label:'First-fix plumbing (relocate bath/shower)', amt:   620 },
+    { label:'Walk-in shower enclosure & tray',           amt:   780 },
+    { label:'Thermostatic mixer shower — supply & fit',  amt:   540 },
+    { label:'Wall-hung toilet, frame & cistern',         amt:   620 },
+    { label:'Vanity unit, basin & tap',                  amt:   560 },
+    { label:'Wall & floor tiles — supply',               amt:   850 },
+    { label:'Tiling labour (full height + floor)',       amt: 1_230 },
+    { label:'Heated towel rail — supply & fit',          amt:   280 },
+    { label:'Tanking / waterproofing to wet area',       amt:   240 },
+    { label:'Electrics — extractor, lighting & spur',    amt:   420 },
+    { label:'Plastering & making good',                  amt:   380 },
+  ],
+  customer: {
+    'Name':'Emma Wright',
+    'Phone':'07700 900742',
+    'Email':'emma.wright@gmail.com',
+  },
+  timingShort: 'Within 4 weeks',
+  jobTags: ['Full bathroom refit', '~2.4 × 2m', 'Walk-in shower', 'Fully tiled', 'Wall-hung WC', 'Heated towel rail'],
+  budget: { low: 6_000, high: 8_000 },
+  score: 93, scoreLabel: 'Premium Lead',
+  clientCity: 'Otley', clientZip: 'LS21 1AB',
+  companyCity: 'Leeds', distanceMi: 11,
+}
+</script>
+<script src="/quote-agent.js"></script>
+</body>
+</html>
