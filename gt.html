@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote Demo</title>
+  <!-- Client sample · GT Plumbing & Heating · gas-certified plumber, Somerset & Wiltshire.
+       Cloned from template.html (self-playing engine). Palette: charcoal + flame pink (from logo). -->
+  <!--
+  ══════════════════════════════════════════════════════════════════════════════
+   SELF-PLAYING QUOTE-AGENT SAMPLE  ·  one self-contained file per client
+  ══════════════════════════════════════════════════════════════════════════════
+   This is a "video" demo: the visitor clicks the chat bubble and the whole
+   conversation types itself out — question, answer, question, answer — then the
+   quote + "how the owner gets the lead" card appear automatically. Nothing is
+   interactive on purpose, so it always tells the same story. It is clearly
+   labelled as a SAMPLE throughout.
+
+   ┌─ TO MAKE A NEW DEMO, you only touch THREE things below: ──────────────────┐
+   │  1. THEME   → the brand colours (change the ~5 "core" hexes)              │
+   │  2. CONFIG  → company name / sub / tagline / niche / logo file            │
+   │  3. MSGS    → the questions + answers (the conversation)                  │
+   │  4. EST     → the itemised quote + lead card numbers                      │
+   │  The Calendly link is fixed for every sample — leave it alone.            │
+   │  Everything else (the engine, layout, animations) never changes.         │
+   └──────────────────────────────────────────────────────────────────────────┘
+   No backend, no API, no cost. Pure client-side. Vercel serves it at /<name>.
+  ══════════════════════════════════════════════════════════════════════════════
+  -->
+  <style>
+    /* ── Brand theme (set from THEME in the script — do not hand-edit here) ── */
+    :root {
+      --bg:#0f1c14; --dark:#13311f; --mid:#1b4a2e; --brand:#2e7d4f; --bright:#46a866;
+      --dot:#5fd089; --chat-bg:#f3f8f4; --tint:#e6f4ea; --tint2:#eefaf0;
+      --line:#e3eee6; --ink:#1f5e38; --ink-soft:#1f6b3f; --ring:rgba(46,125,79,0.40);
+      --cta:#f59e0b; --cta2:#d97706;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .page-center { text-align: center; color: #fff; user-select: none; padding: 20px; }
+
+    /* SAMPLE badge on the landing page */
+    .sample-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18);
+      color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; padding: 7px 14px; border-radius: 999px; margin-bottom: 22px;
+    }
+    .sample-badge .pulse {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--bright);
+      box-shadow: 0 0 0 0 var(--ring); animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse { 0%{box-shadow:0 0 0 0 var(--ring)} 70%{box-shadow:0 0 0 9px rgba(0,0,0,0)} 100%{box-shadow:0 0 0 0 rgba(0,0,0,0)} }
+
+    .logo-wrap {
+      width: 96px; height: 96px; border-radius: 20px;
+      overflow: hidden; margin: 0 auto 18px;
+      border: 2px solid var(--ring);
+      box-shadow: 0 0 0 4px rgba(0,0,0,0.12);
+      background: #fff; display: flex; align-items: center; justify-content: center;
+    }
+    .logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
+    .logo-fallback {
+      font-size: 28px; font-weight: 900; letter-spacing: -1px;
+      background: linear-gradient(135deg, var(--bright), var(--mid));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .company-name { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: #fff; margin-bottom: 6px; }
+    .company-sub {
+      font-size: 12.5px; color: var(--bright);
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 10px;
+    }
+    .tagline { font-size: 14px; color: rgba(255,255,255,0.35); font-weight: 400; }
+    .watch-hint { margin-top: 26px; font-size: 13px; color: rgba(255,255,255,0.5); font-weight: 500; }
+    .watch-hint b { color: rgba(255,255,255,0.85); }
+
+    #widget-root {
+      position: fixed; bottom: 28px; right: 28px;
+      z-index: 9999; display: flex; flex-direction: column;
+      align-items: flex-end; gap: 12px;
+    }
+
+    @keyframes chatOpen { from { opacity: 0; transform: translateY(32px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes tooltipPop { from { opacity: 0; transform: scale(0.88) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.94) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .chat-panel {
+      animation: chatOpen 0.42s cubic-bezier(0.16,1,0.3,1) both;
+      width: 440px;
+      height: clamp(480px, calc(100vh - 120px), 700px);
+      display: flex; flex-direction: column;
+      background: #fff; border-radius: 22px; overflow: hidden;
+      box-shadow: 0 32px 96px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .chat-header {
+      background: linear-gradient(135deg, var(--dark) 0%, var(--mid) 55%, var(--brand) 100%);
+      padding: 14px 18px 13px;
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    /* Slim "this is a sample" strip under the header */
+    .sample-strip {
+      background: var(--tint); color: var(--ink);
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 6px 16px; text-align: center; flex-shrink: 0;
+      border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .sample-strip .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--brand); }
+
+    .msgs-scroll {
+      flex: 1; overflow-y: auto;
+      padding: 18px 14px 18px 16px;
+      display: flex; flex-direction: column; gap: 8px;
+      background: var(--chat-bg);
+      scrollbar-width: thin; scrollbar-color: var(--ring) transparent;
+    }
+    .msgs-scroll::-webkit-scrollbar { width: 3px; }
+    .msgs-scroll::-webkit-scrollbar-thumb { background: var(--ring); border-radius: 10px; }
+
+    .msg-agent { display: flex; align-items: flex-end; gap: 8px; animation: msgIn 0.3s ease both; }
+    .msg-agent-bubble {
+      background: #fff; color: #1a2520;
+      border-radius: 18px 18px 18px 5px;
+      padding: 11px 15px; max-width: 80%;
+      font-size: 13.5px; line-height: 1.55;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .msg-user { display: flex; justify-content: flex-end; animation: msgIn 0.3s ease both; }
+    .msg-user-bubble {
+      background: linear-gradient(135deg, var(--brand), var(--mid));
+      color: #fff; border-radius: 18px 18px 5px 18px;
+      padding: 11px 15px; max-width: 80%;
+      font-size: 13.5px; line-height: 1.55; font-weight: 500;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    }
+
+    .avatar-dot {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand), var(--mid));
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Typing indicators (agent = left/white, user = right/brand) */
+    .typing-bubble {
+      border-radius: 18px 18px 18px 5px; padding: 12px 15px;
+      display: inline-flex; gap: 4px; align-items: center;
+      background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+    }
+    .typing-bubble.user { border-radius: 18px 18px 5px 18px; background: linear-gradient(135deg, var(--brand), var(--mid)); }
+    .typing-bubble span { width: 7px; height: 7px; border-radius: 50%; background: #c2d5c9; animation: typingDot 1.2s infinite ease-in-out; }
+    .typing-bubble.user span { background: rgba(255,255,255,0.85); }
+    .typing-bubble span:nth-child(2) { animation-delay: .18s; }
+    .typing-bubble span:nth-child(3) { animation-delay: .36s; }
+    @keyframes typingDot { 0%,60%,100% { opacity:.3; transform: translateY(0); } 30% { opacity:1; transform: translateY(-3px); } }
+
+    .input-area { padding: 10px 14px; background: #fff; border-top: 1px solid var(--line); flex-shrink: 0; }
+    .input-row { display: flex; gap: 8px; align-items: center; }
+    .input-field {
+      flex: 1; padding: 11px 16px; border-radius: 22px;
+      border: 1.5px solid var(--line); font-size: 13.5px;
+      outline: none; background: var(--chat-bg); color: #111827; font-family: inherit;
+    }
+    .send-btn {
+      width: 42px; height: 42px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--mid), var(--dark));
+      color: #fff; border: none; border-radius: 50%;
+      cursor: not-allowed; display: flex; align-items: center; justify-content: center; opacity: 0.4;
+    }
+
+    .tooltip {
+      animation: tooltipPop 0.26s cubic-bezier(0.16,1,0.3,1) both;
+      background: #fff; color: #1a2520;
+      font-size: 13px; font-weight: 600;
+      padding: 9px 16px; border-radius: 22px;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.1);
+      white-space: nowrap; position: relative; letter-spacing: -0.1px;
+    }
+    .tooltip::after {
+      content: ''; position: absolute; bottom: -7px; right: 30px; width: 0; height: 0;
+      border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 8px solid #fff;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,0.06));
+    }
+
+    .bubble-btn {
+      width: 62px; height: 62px; border-radius: 50%;
+      border: 2.5px solid #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s, background 0.3s; padding: 0;
+    }
+    .bubble-btn:hover { transform: scale(1.07); }
+    .bubble-open  { background: linear-gradient(135deg, #374151, #1f2937); box-shadow: 0 6px 20px rgba(0,0,0,0.35); }
+    .bubble-closed { background: linear-gradient(135deg, var(--mid), var(--dark)); box-shadow: 0 6px 24px rgba(0,0,0,0.5), 0 0 0 3px var(--ring); }
+
+    .icon-btn {
+      color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.12);
+      border: none; cursor: pointer; border-radius: 8px;
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: opacity 0.15s;
+    }
+    .icon-btn:hover { opacity: 0.65; }
+
+    /* ── Owner modal ─────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(6,16,10,0.85);
+      backdrop-filter: blur(6px); z-index: 99999;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-card {
+      animation: modalIn 0.38s cubic-bezier(0.16,1,0.3,1) both;
+      background: #fff; border-radius: 22px; max-width: 460px; width: 100%;
+      max-height: calc(100vh - 40px); overflow-y: auto;
+      box-shadow: 0 48px 140px rgba(0,0,0,0.7), 0 16px 48px rgba(0,0,0,0.4);
+      scrollbar-width: thin; scrollbar-color: var(--ring) transparent;
+    }
+    .modal-card::-webkit-scrollbar { width: 3px; }
+    .modal-card::-webkit-scrollbar-thumb { background: var(--ring); border-radius: 10px; }
+
+    /* ── Mobile ──────────────────────────────────────────────────── */
+    @media (max-width: 480px) {
+      body { overflow-x: hidden; }
+      #widget-root { right: 12px; left: 12px; bottom: 12px; gap: 10px; }
+      .chat-panel { position: fixed; inset: 0; width: 100%; height: 100vh; height: 100dvh; max-height: none; border-radius: 0; z-index: 100000; }
+      .tooltip { max-width: calc(100vw - 96px); white-space: normal; text-align: right; }
+      .modal-overlay { padding: 12px; }
+      .modal-card { max-height: calc(100dvh - 24px); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-center" id="hero"></div>
+<div id="widget-root"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════════════
+//  1. THEME  ·  brand colours.  Change the ~5 "core" hexes to re-skin a demo.
+// ════════════════════════════════════════════════════════════════════════════
+const THEME = {
+  bg:     '#201d1f',   // core · page background behind the logo (charcoal, matches logo bg)
+  dark:   '#2b2629',   // core · darkest brand shade (gradient start, big numbers — charcoal)
+  mid:    '#7c4d68',   // core · mid brand shade (charcoal→pink bridge, muted plum)
+  brand:  '#d24f93',   // core · primary brand colour (buttons, user bubbles — flame pink)
+  bright: '#ec9cc0',   // core · lighter brand accent (highlights, online dot — light flame pink)
+  // —— the rest usually follow automatically; tweak only if the brand is unusual ——
+  dot:     '#f4a9cb',  // "online" status dot
+  chatBg:  '#fbf4f8',  // chat scroll background (very light brand tint)
+  tint:    '#fbe6f1',  // light tint for chips / pills
+  tint2:   '#fdeff6',  // alt light tint (footer note)
+  line:    '#f0dde7',  // hairline borders
+  ink:     '#a83a72',  // dark brand text sitting on light tints
+  inkSoft: '#c14d88',  // medium brand text for prices
+  ring:    'rgba(210,79,147,0.40)', // soft glow ring (match brand, keep the 0.40 alpha)
+  cta:     '#f59e0b',  // Calendly CTA button — amber pops on every brand, leave as-is
+  cta2:    '#d97706',
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  2. CONFIG  ·  company identity
+// ════════════════════════════════════════════════════════════════════════════
+const CONFIG = {
+  brand: {
+    name: 'GT Plumbing & Heating',
+    sub: 'Gas · Plumbing · Heating',
+    tagline: 'Somerset & Wiltshire · Instant quote system',
+    initial: 'GT',
+    logoSrc: 'gt-logo.jpg',  // e.g. 'apex-logo.jpg' (drop the file in this folder). Leave '' to use the initial.
+    fbHandle: '',            // or an FB page handle to pull their profile pic. logoSrc wins if both set.
+    online: 'Online · Replies in seconds',
+  },
+  niche: 'new boiler',                // fills the opening line: "…a quote for your {niche}?"
+  tooltip: 'See how it works ▶',
+  currency: { symbol: '£', locale: 'en-GB' },
+  sendToOwnerLabel: 'Send to owner →',
+
+  // ── Your pitch (shown inside the owner card). The Calendly link is FIXED for
+  //    every sample — always this one. Do not change it.
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
+  ctaTitle: 'This is just a sample.',
+  ctaText: 'Want this on your own site, capturing real leads like this around the clock?',
+  ctaButton: 'Book a 15-min call →',
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  3. MSGS  ·  the conversation (plays itself top-to-bottom, always the same).
+//     Keep the first agent line as the warm "Would you like a quote for your …?"
+//     opener, then alternate agent question / user answer.
+// ════════════════════════════════════════════════════════════════════════════
+const MSGS = [
+  { r:'agent', t:"Hi! Would you like a quote for your new boiler?" },
+  { r:'user',  t:"Yes please, our boiler keeps breaking down" },
+  { r:'agent', t:"Sorry to hear that. Is it a straight boiler swap, or moving the system too?" },
+  { r:'user',  t:"Just a swap for now, same spot" },
+  { r:'agent', t:"Got it. Do you have a combi at the moment, or a system boiler with a tank?" },
+  { r:'user',  t:"An old combi in the kitchen" },
+  { r:'agent', t:"And how many bedrooms and bathrooms is the property?" },
+  { r:'user',  t:"Three beds, one bathroom and a downstairs loo" },
+  { r:'agent', t:"A combi will suit that nicely. Any preferred make, or shall we spec a Worcester Bosch?" },
+  { r:'user',  t:"Worcester Bosch sounds good" },
+  { r:'agent', t:"Would you like a power flush and a system filter while we're at it? Helps it last." },
+  { r:'user',  t:"Yes, whatever keeps it running well" },
+  { r:'agent', t:"Smart thermostat too, so you can control the heating from your phone?" },
+  { r:'user',  t:"Go on then, yeah" },
+  { r:'agent', t:"Any radiators playing up that you'd want swapped?" },
+  { r:'user',  t:"Two of them never really heat up" },
+  { r:'agent', t:"We'll replace those two. What's your postcode?" },
+  { r:'user',  t:"BA14 8AA" },
+  { r:'agent', t:"Roughly what budget did you have in mind?" },
+  { r:'user',  t:"Somewhere around £4,000" },
+  { r:'agent', t:"And your name?" },
+  { r:'user',  t:"Sarah Hughes" },
+  { r:'agent', t:"Thanks Sarah — best number to reach you on?" },
+  { r:'user',  t:"07700 900614" },
+  { r:'agent', t:"And your email?" },
+  { r:'user',  t:"sarah.hughes@gmail.com" },
+  { r:'agent', t:"Thanks Sarah — putting your boiler quote together now." },
+  { r:'estimate' }
+]
+
+// ════════════════════════════════════════════════════════════════════════════
+//  4. EST  ·  the itemised quote + the owner lead card. Make the item amounts
+//     sum exactly to EST.mid, and keep budget bracketing mid (green "match").
+// ════════════════════════════════════════════════════════════════════════════
+const EST = {
+  lower: 3_900, mid: 4_200, upper: 4_600,
+  status: 'PRIORITY',
+  items: [
+    { label:'New combi boiler — supply (Worcester Bosch)', amt: 1_150 },
+    { label:'Boiler installation — labour (Gas Safe)',     amt:   850 },
+    { label:'Remove & dispose old boiler',                 amt:   180 },
+    { label:'New flue kit & fittings',                     amt:   210 },
+    { label:'Full system power flush',                     amt:   420 },
+    { label:'Magnetic system filter',                      amt:   140 },
+    { label:'Smart thermostat — supply & fit',             amt:   250 },
+    { label:'2× radiators replaced — supply & fit',        amt:   540 },
+    { label:'Thermostatic radiator valves (×6)',           amt:   240 },
+    { label:'Gas safety check & certification',            amt:   120 },
+    { label:'Pipework, fixings & sundries',                amt:   100 },
+  ],
+  customer: {
+    'Name':'Sarah Hughes',
+    'Phone':'07700 900614',
+    'Email':'sarah.hughes@gmail.com',
+  },
+  timingShort: 'Within 3 weeks',
+  jobTags: ['New combi boiler', 'Worcester Bosch', 'Power flush + filter', 'Smart thermostat', '2 rads + TRVs', 'Gas Safe install'],
+  budget: { low: 3_500, high: 4_500 },
+  score: 94, scoreLabel: 'Premium Lead',
+  clientCity: 'Trowbridge', clientZip: 'BA14 8AA',
+  companyCity: 'Frome', distanceMi: 9,
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  ▼▼▼  ENGINE — you should not need to edit anything below this line.  ▼▼▼
+// ════════════════════════════════════════════════════════════════════════════
+
+// Apply the theme to CSS variables.
+;(() => {
+  const r = document.documentElement.style
+  const map = { bg:'--bg', dark:'--dark', mid:'--mid', brand:'--brand', bright:'--bright',
+    dot:'--dot', chatBg:'--chat-bg', tint:'--tint', tint2:'--tint2', line:'--line',
+    ink:'--ink', inkSoft:'--ink-soft', ring:'--ring', cta:'--cta', cta2:'--cta2' }
+  for (const k in map) if (THEME[k]) r.setProperty(map[k], THEME[k])
+})()
+
+function money(n) { return CONFIG.currency.symbol + n.toLocaleString(CONFIG.currency.locale) }
+function esc(s) {
+  if (!s && s !== 0) return ''
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+}
+const firstName   = (EST.customer.Name || '').trim().split(/\s+/)[0] || ''
+const leadInitial = (EST.customer.Name || '?').trim().charAt(0).toUpperCase()
+const budgetMatch = EST.mid >= EST.budget.low && EST.mid <= EST.budget.high
+
+// ── Playback state ──────────────────────────────────────────────────────────
+let isOpen    = false
+let showModal = false
+let revealed  = 0          // how many MSGS entries are fully shown
+let typingFor = null       // 'agent' | 'user' | null  (who is mid-typing)
+let finished  = false
+let playId    = 0          // bumped to cancel any in-flight playback
+
+// Pacing — brisk but still readable, like watching a sped-up video.
+// (Bump these numbers up to slow it down, drop them to speed it up.)
+function typeMs(t, who) { const len=(t||'').length; const base = who==='user'?240:300; return Math.min(560, base + len*4) }
+function readMs(t)      { const len=(t||'').length; return Math.min(820, 340 + len*10) }
+
+function startPlay() {
+  revealed = 0; typingFor = null; finished = false; showModal = false
+  const myId = ++playId
+  isOpen = true
+  render(); setTimeout(scrollBottom, 60)
+  setTimeout(() => step(myId), 400)
+}
+function stopPlay() { playId++; typingFor = null }
+
+function step(myId) {
+  if (myId !== playId) return
+  if (revealed >= MSGS.length) {
+    finished = true; typingFor = null; render(); setTimeout(scrollBottom, 20)
+    setTimeout(() => { if (myId === playId) { showModal = true; render() } }, 700)  // climax: show the owner card
+    return
+  }
+  const msg = MSGS[revealed]
+  const who = msg.r === 'user' ? 'user' : 'agent'   // estimate uses the agent typing beat
+  typingFor = who
+  render(); setTimeout(scrollBottom, 20)
+  const tDur = msg.r === 'estimate' ? 850 : typeMs(msg.t, who)
+  setTimeout(() => {
+    if (myId !== playId) return
+    typingFor = null; revealed++
+    render(); setTimeout(scrollBottom, 20)
+    const rDur = msg.r === 'estimate' ? 900 : readMs(msg.t)
+    setTimeout(() => step(myId), rDur)
+  }, tDur)
+}
+
+// ── Logo markup (file → FB handle → initial) ────────────────────────────────
+function logoMarkup(fallbackStyle) {
+  const b = CONFIG.brand
+  const fb = `<span class="logo-fallback" style="display:none;${fallbackStyle||''}">${esc(b.initial)}</span>`
+  if (b.logoSrc) return `<img src="${esc(b.logoSrc)}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="${esc(b.name)} logo">${fb}`
+  if (b.fbHandle) return `<img src="https://graph.facebook.com/${esc(b.fbHandle)}/picture?type=large" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="${esc(b.name)} logo">${fb}`
+  return `<span class="logo-fallback" style="display:flex;${fallbackStyle||''}">${esc(b.initial)}</span>`
+}
+
+// ── Hero (landing page) ─────────────────────────────────────────────────────
+function buildHero() {
+  const b = CONFIG.brand
+  document.title = b.name + ' · Instant Quote (sample)'
+  document.getElementById('hero').innerHTML = `
+    <div class="sample-badge"><span class="pulse"></span>Sample · not a live system</div>
+    <div class="logo-wrap">${logoMarkup()}</div>
+    <div class="company-name">${esc(b.name)}</div>
+    <div class="company-sub">${esc(b.sub)}</div>
+    <div class="tagline">${esc(b.tagline)}</div>
+    <div class="watch-hint">Tap the chat bubble — it plays itself, <b>just watch</b> ↘</div>`
+}
+
+// ── Render ──────────────────────────────────────────────────────────────────
+// Incremental: the panel is built ONCE when the chat opens; new messages are
+// appended in place (see syncChat). Never tear the whole panel down on a tick —
+// that re-triggers the open animation and makes the widget flicker.
+function render() {
+  // Modal layer (separate from the widget)
+  const existing = document.getElementById('ownerModal')
+  if (showModal && !existing) { const m = buildModal(); m.id = 'ownerModal'; document.body.appendChild(m) }
+  else if (!showModal && existing) existing.remove()
+
+  const root = document.getElementById('widget-root')
+  let bubble = root.querySelector('.bubble-btn')
+  let panel  = root.querySelector('.chat-panel')
+  let tip    = root.querySelector('.tooltip')
+
+  if (isOpen) {
+    if (tip) { tip.remove(); tip = null }
+    if (!panel) { panel = buildPanel(); root.insertBefore(panel, bubble || null) }
+    syncChat()
+  } else {
+    if (panel) { panel.remove(); panel = null }
+    if (!tip) { tip = document.createElement('div'); tip.className = 'tooltip'; tip.textContent = CONFIG.tooltip; root.insertBefore(tip, bubble || null) }
+  }
+
+  if (!bubble) { bubble = buildBubble(); root.appendChild(bubble) }
+  else updateBubble(bubble)
+}
+
+// Append any newly-revealed messages + the typing indicator, without rebuilding.
+function syncChat() {
+  const msgs = document.getElementById('msgsScroll')
+  if (!msgs) return
+  let shown = +(msgs.dataset.shown || 0)
+  if (revealed < shown) { msgs.innerHTML = ''; shown = 0 }   // replay reset
+  const typer = msgs.querySelector('.typing-indicator')
+  if (typer) typer.remove()
+  for (let i = shown; i < revealed; i++) msgs.appendChild(buildMessageNode(MSGS[i], i))
+  msgs.dataset.shown = revealed
+  if (typingFor === 'agent' || typingFor === 'user') msgs.appendChild(buildTypingNode(typingFor))
+
+  const panel = document.querySelector('.chat-panel')
+  if (panel) {
+    const bar = panel.querySelector('.send-bar')
+    if (finished && !bar) panel.appendChild(buildSendBar())
+    else if (!finished && bar) bar.remove()
+  }
+  scrollBottom()
+}
+
+function buildMessageNode(msg, i) {
+  if (msg.r === 'agent') {
+    const showAvatar = i === 0 || MSGS[i-1].r !== 'agent'
+    const wrap = document.createElement('div'); wrap.className = 'msg-agent'
+    wrap.innerHTML = `<div class="avatar-dot" style="visibility:${showAvatar?'visible':'hidden'}">${agentGlyph()}</div><div class="msg-agent-bubble">${esc(msg.t)}</div>`
+    return wrap
+  }
+  if (msg.r === 'user') {
+    const wrap = document.createElement('div'); wrap.className = 'msg-user'
+    wrap.innerHTML = `<div class="msg-user-bubble">${esc(msg.t)}</div>`
+    return wrap
+  }
+  return buildCostMessage()   // estimate
+}
+
+function buildTypingNode(who) {
+  const wrap = document.createElement('div')
+  wrap.className = 'typing-indicator ' + (who === 'user' ? 'msg-user' : 'msg-agent')
+  wrap.innerHTML = who === 'agent'
+    ? `<div class="avatar-dot">${agentGlyph()}</div><div class="typing-bubble"><span></span><span></span><span></span></div>`
+    : `<div class="typing-bubble user"><span></span><span></span><span></span></div>`
+  return wrap
+}
+
+function buildBubble() {
+  const btn = document.createElement('button')
+  btn.onclick = () => { if (isOpen) { isOpen = false; stopPlay(); render() } else { startPlay() } }
+  updateBubble(btn)
+  return btn
+}
+function updateBubble(btn) {
+  btn.className = 'bubble-btn ' + (isOpen ? 'bubble-open' : 'bubble-closed')
+  btn.innerHTML = isOpen
+    ? `<svg viewBox="0 0 14 14" fill="none" style="width:16px;height:16px"><path d="M1 1l12 12M13 1L1 13" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" style="width:28px;height:28px"><path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="#fff"/></svg>`
+}
+
+function buildPanel() {
+  const panel = document.createElement('div')
+  panel.className = 'chat-panel'
+  const b = CONFIG.brand
+
+  // Header
+  const hdr = document.createElement('header')
+  hdr.className = 'chat-header'
+  hdr.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:42px;height:42px;border-radius:10px;background:#fff;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center">
+        ${logoMarkup('font-size:12px;font-weight:900;color:var(--mid)')}
+      </div>
+      <div>
+        <div style="color:#fff;font-weight:700;font-size:13.5px;letter-spacing:-0.3px;line-height:1.2">${esc(b.name)}</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--dot);box-shadow:0 0 0 2px rgba(255,255,255,0.18)"></div>
+          <span style="color:#cfe7d8;font-size:11px;font-weight:500">${esc(b.online)}</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="replayBtn" title="Replay">
+        <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2v3h-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn" id="closeBtn" title="Close">
+        <svg viewBox="0 0 14 14" fill="none" style="width:12px;height:12px"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>`
+  hdr.querySelector('#closeBtn').onclick = () => { isOpen = false; stopPlay(); render() }
+  hdr.querySelector('#replayBtn').onclick = () => startPlay()
+  panel.appendChild(hdr)
+
+  // "Sample" strip
+  const strip = document.createElement('div')
+  strip.className = 'sample-strip'
+  strip.innerHTML = `<span class="pulse"></span>Sample conversation — plays automatically`
+  panel.appendChild(strip)
+
+  // Messages (populated incrementally by syncChat — built empty here)
+  const msgs = document.createElement('div')
+  msgs.className = 'msgs-scroll'; msgs.id = 'msgsScroll'
+  panel.appendChild(msgs)
+
+  // Disabled input (it's a sample — nobody types)
+  const inp = document.createElement('div')
+  inp.className = 'input-area'
+  inp.innerHTML = `
+    <div class="input-row">
+      <input class="input-field" type="text" placeholder="Sample — no typing needed" disabled>
+      <button class="send-btn" disabled>
+        <svg viewBox="0 0 20 20" fill="none" style="width:18px;height:18px;transform:translateX(1px)"><path d="M3 10L17 3l-4 7 4 7L3 10Z" fill="white"/></svg>
+      </button>
+    </div>`
+  panel.appendChild(inp)
+  return panel   // send bar is added by syncChat once the quote is revealed
+}
+
+function agentGlyph() {
+  return `<svg viewBox="0 0 14 14" fill="none" style="width:12px;height:12px"><path d="M7 1C4.24 1 2 3.24 2 6c0 1.73.89 3.25 2.23 4.15L3.5 13 7 11.5l3.5 1.5-.73-2.85A5 5 0 0 0 12 6c0-2.76-2.24-5-5-5Z" fill="#c9f0d6"/></svg>`
+}
+
+function scrollBottom() { const el = document.getElementById('msgsScroll'); if (el) el.scrollTop = el.scrollHeight }
+
+// ── Cost breakdown — chat message ───────────────────────────────────────────
+function buildCostMessage() {
+  const wrap = document.createElement('div')
+  wrap.className = 'msg-agent'; wrap.style.cssText = 'align-items:flex-start;'
+
+  const avatar = document.createElement('div')
+  avatar.className = 'avatar-dot'; avatar.style.marginTop = '2px'
+  avatar.innerHTML = agentGlyph()
+
+  const rows = EST.items.map((item, i) => `
+    <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#374151;padding:4px 0;${i<EST.items.length-1?'border-bottom:1px solid var(--line)':''}">
+      <span>${esc(item.label)}</span>
+      <span style="font-weight:700;color:var(--ink-soft);white-space:nowrap">${money(item.amt)}</span>
+    </div>`).join('')
+
+  const bubble = document.createElement('div')
+  bubble.className = 'msg-agent-bubble'; bubble.style.cssText = 'max-width:92%;padding:12px 14px;'
+  bubble.innerHTML = `
+    <div style="font-size:12.5px;color:#374151;font-weight:600;margin-bottom:10px">Here's your estimate${firstName?', '+esc(firstName):''}. This is how the numbers came out:</div>
+    <div style="display:flex;flex-direction:column;gap:0;margin-bottom:10px;">${rows}</div>
+    <div style="background:linear-gradient(135deg,var(--tint),var(--tint2));border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+      <div>
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink);font-weight:700;margin-bottom:2px">Estimated total</div>
+        <div style="font-size:24px;font-weight:900;color:var(--dark);letter-spacing:-1px;line-height:1">${money(EST.mid)}</div>
+        <div style="font-size:10px;color:#6b7280;margin-top:2px">${money(EST.lower)} – ${money(EST.upper)} range</div>
+      </div>
+      <div style="background:rgba(0,0,0,0.04);border:1px solid var(--line);border-radius:8px;padding:4px 10px;flex-shrink:0;text-align:center">
+        <div style="font-size:9px;color:var(--ink);font-weight:700;text-transform:uppercase;letter-spacing:.08em">Timing</div>
+        <div style="font-size:11px;color:var(--ink);font-weight:600">${esc(EST.timingShort)}</div>
+      </div>
+    </div>`
+
+  wrap.appendChild(avatar); wrap.appendChild(bubble)
+  return wrap
+}
+
+// ── Send bar — fixed footer ─────────────────────────────────────────────────
+function buildSendBar() {
+  const bar = document.createElement('div')
+  bar.className = 'send-bar'
+  bar.style.cssText = 'background:#fff;border-top:1.5px solid var(--line);flex-shrink:0;padding:10px 14px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;'
+  const left = document.createElement('div')
+  left.innerHTML = `
+    <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#6b7280;font-weight:700;margin-bottom:1px">Estimated quote</div>
+    <div style="font-size:20px;font-weight:900;color:var(--ink-soft);letter-spacing:-1px;line-height:1">${money(EST.mid)}</div>`
+  const btn = document.createElement('button')
+  btn.textContent = CONFIG.sendToOwnerLabel
+  btn.style.cssText = 'background:linear-gradient(135deg,var(--brand),var(--mid));color:#fff;border:none;border-radius:10px;padding:10px 15px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.2);flex-shrink:0;'
+  btn.onclick = () => { showModal = true; render() }
+  bar.appendChild(left); bar.appendChild(btn)
+  return bar
+}
+
+// ── Owner notification modal ────────────────────────────────────────────────
+function buildModal() {
+  const overlay = document.createElement('div')
+  overlay.className = 'modal-overlay'
+  overlay.onclick = e => { if (e.target === overlay) { showModal = false; render() } }
+  const now = new Date().toLocaleTimeString(CONFIG.currency.locale, { hour:'2-digit', minute:'2-digit' })
+
+  const jobTags = EST.jobTags.map(t =>
+    `<span style="font-size:12px;font-weight:600;color:var(--ink);background:var(--tint);padding:4px 12px;border-radius:20px">${esc(t)}</span>`
+  ).join('') +
+    `<span style="font-size:12px;font-weight:600;color:var(--ink);background:var(--tint2);border:1px solid var(--line);padding:4px 12px;border-radius:20px">${esc(EST.timingShort)}</span>`
+
+  const budgetBox = budgetMatch
+    ? `<div style="display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:8px 12px">
+         <div style="width:20px;height:20px;border-radius:50%;background:#16a34a;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+           <svg viewBox="0 0 12 12" fill="none" style="width:10px;height:10px"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+         </div>
+         <span style="font-size:12.5px;font-weight:700;color:#15803d">Budget match — the quote sits inside the customer's range</span>
+       </div>`
+    : `<div style="display:flex;align-items:center;gap:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:8px 12px">
+         <span style="font-size:14px">⚠️</span>
+         <span style="font-size:12.5px;font-weight:700;color:#92400e">Slightly above the customer's stated budget</span>
+       </div>`
+
+  const ctaBlock = CONFIG.calendly ? `
+    <div style="padding:6px 18px 20px">
+      <div style="background:linear-gradient(135deg,var(--dark),var(--mid));border-radius:14px;padding:16px 18px;text-align:center">
+        <div style="font-size:13px;font-weight:800;color:#fff;letter-spacing:-0.2px">${esc(CONFIG.ctaTitle || '')}</div>
+        <div style="font-size:12px;color:#cfe7d8;margin:4px 0 12px;line-height:1.45">${esc(CONFIG.ctaText || '')}</div>
+        <a href="${esc(CONFIG.calendly)}" target="_blank" rel="noopener"
+           style="display:inline-block;background:linear-gradient(135deg,var(--cta),var(--cta2));color:#fff;text-decoration:none;font-weight:700;font-size:13px;padding:11px 22px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,0.25)">${esc(CONFIG.ctaButton || 'Book a call →')}</a>
+      </div>
+    </div>` : ''
+
+  const card = document.createElement('div')
+  card.className = 'modal-card'
+  card.innerHTML = `
+    <div style="background:linear-gradient(135deg,var(--dark),var(--mid),var(--brand));padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-radius:22px 22px 0 0">
+      <div>
+        <div style="font-size:10px;color:#cfe7d8;text-transform:uppercase;letter-spacing:.14em;font-weight:600;margin-bottom:3px">Owner notification · sample</div>
+        <div style="color:#fff;font-weight:800;font-size:15px;letter-spacing:-0.3px">How ${esc(CONFIG.brand.name)} receives it</div>
+      </div>
+      <button id="modalClose" style="background:rgba(255,255,255,0.12);border:none;color:#fff;width:34px;height:34px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;line-height:1">✕</button>
+    </div>
+
+    <div style="padding:18px 18px 6px">
+      <div style="background:var(--chat-bg);border:1.5px solid var(--line);border-radius:16px;overflow:hidden">
+
+        <div style="background:linear-gradient(90deg,var(--mid),var(--dark));padding:9px 16px;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--dot);box-shadow:0 0 0 3px rgba(255,255,255,0.18)"></div>
+            <span style="color:#fff;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.1em">New ${esc(EST.scoreLabel)}</span>
+          </div>
+          <span style="color:#cfe7d8;font-size:11px;font-weight:500">${now}</span>
+        </div>
+
+        <div style="padding:16px 16px 12px;border-bottom:1px solid var(--line)">
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <div style="width:44px;height:44px;border-radius:12px;background:var(--tint);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;font-weight:900;color:var(--ink)">${esc(leadInitial)}</div>
+            <div style="flex:1">
+              <div style="font-size:16px;font-weight:800;color:#111827;letter-spacing:-0.3px">${esc(EST.customer.Name)}</div>
+              <div style="font-size:12.5px;color:#6b7280;margin-top:2px">${esc(EST.customer.Email)}</div>
+              <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
+                <span style="font-size:12px;font-weight:700;color:var(--ink);background:var(--tint);padding:3px 10px;border-radius:20px">📞 ${esc(EST.customer.Phone)}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:12px 16px;border-bottom:1px solid var(--line);background:#fff">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:32px;height:32px;border-radius:8px;background:var(--tint);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">📍</div>
+              <div>
+                <div style="font-size:9.5px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;font-weight:600">Lead location</div>
+                <div style="font-size:13.5px;font-weight:700;color:#111827">${esc(EST.clientCity)} · ${esc(EST.clientZip)}</div>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:9.5px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;font-weight:600">From you</div>
+              <div style="font-size:20px;font-weight:900;color:var(--ink-soft);letter-spacing:-1px;line-height:1">~${EST.distanceMi} mi</div>
+              <div style="font-size:10px;color:#9ca3af">from ${esc(EST.companyCity)}</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;height:5px;background:var(--line);border-radius:3px;overflow:hidden">
+            <div style="width:26%;height:100%;background:linear-gradient(90deg,var(--dot),var(--mid));border-radius:3px"></div>
+          </div>
+        </div>
+
+        <div style="padding:14px 16px;border-bottom:1px solid var(--line)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px">
+            <div>
+              <div style="font-size:9.5px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:3px">Calculated quote</div>
+              <div style="font-size:30px;font-weight:900;color:var(--dark);letter-spacing:-1.5px;line-height:1">${money(EST.mid)}</div>
+              <div style="font-size:11px;color:#9ca3af;margin-top:3px">${money(EST.lower)} – ${money(EST.upper)}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:9.5px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:3px">Their budget</div>
+              <div style="font-size:14px;font-weight:700;color:#111827">${money(EST.budget.low)} –</div>
+              <div style="font-size:14px;font-weight:700;color:#111827">${money(EST.budget.high)}</div>
+            </div>
+          </div>
+          ${budgetBox}
+        </div>
+
+        <div style="padding:12px 16px;border-bottom:1px solid var(--line);background:#fff">
+          <div style="font-size:9.5px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:8px">Job details</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">${jobTags}</div>
+        </div>
+
+        <div style="padding:12px 16px;background:var(--chat-bg)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.12em;font-weight:600">Lead score</span>
+            <div style="display:flex;align-items:center;gap:7px">
+              <span style="font-size:22px;font-weight:900;color:var(--ink-soft);letter-spacing:-0.5px">${EST.score}<span style="font-size:12px;font-weight:600;color:#9ca3af">/100</span></span>
+              <span style="font-size:10.5px;font-weight:700;color:#fff;background:var(--brand);padding:3px 10px;border-radius:20px">${esc(EST.scoreLabel)}</span>
+            </div>
+          </div>
+          <div style="height:6px;border-radius:3px;background:var(--line);overflow:hidden">
+            <div style="height:100%;width:${EST.score}%;background:linear-gradient(90deg,var(--dot),var(--mid));border-radius:3px"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="padding:14px 18px 8px;text-align:center">
+      <div style="display:flex;align-items:center;justify-content:center;gap:7px;background:var(--tint2);border:1px solid var(--line);border-radius:12px;padding:10px 16px">
+        <span style="font-size:14px">✉️</span>
+        <span style="font-size:12px;color:var(--ink);font-weight:600">The customer received an automatic confirmation email</span>
+      </div>
+    </div>
+    ${ctaBlock}`
+
+  card.querySelector('#modalClose').onclick = () => { showModal = false; render() }
+  overlay.appendChild(card)
+  return overlay
+}
+
+buildHero()
+render()
+</script>
+</body>
+</html>
