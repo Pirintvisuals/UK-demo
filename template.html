@@ -388,16 +388,17 @@ let typingFor = null       // 'agent' | 'user' | null  (who is mid-typing)
 let finished  = false
 let playId    = 0          // bumped to cancel any in-flight playback
 
-// Pacing — slow enough to read comfortably, like watching a video.
-function typeMs(t, who) { const len=(t||'').length; const base = who==='user'?620:780; return Math.min(1700, base + len*11) }
-function readMs(t)      { const len=(t||'').length; return Math.min(3200, 1150 + len*26) }
+// Pacing — brisk but still readable, like watching a sped-up video.
+// (Bump these numbers up to slow it down, drop them to speed it up.)
+function typeMs(t, who) { const len=(t||'').length; const base = who==='user'?240:300; return Math.min(560, base + len*4) }
+function readMs(t)      { const len=(t||'').length; return Math.min(820, 340 + len*10) }
 
 function startPlay() {
   revealed = 0; typingFor = null; finished = false; showModal = false
   const myId = ++playId
   isOpen = true
   render(); setTimeout(scrollBottom, 60)
-  setTimeout(() => step(myId), 650)
+  setTimeout(() => step(myId), 400)
 }
 function stopPlay() { playId++; typingFor = null }
 
@@ -405,19 +406,19 @@ function step(myId) {
   if (myId !== playId) return
   if (revealed >= MSGS.length) {
     finished = true; typingFor = null; render(); setTimeout(scrollBottom, 20)
-    setTimeout(() => { if (myId === playId) { showModal = true; render() } }, 1000)  // climax: show the owner card
+    setTimeout(() => { if (myId === playId) { showModal = true; render() } }, 700)  // climax: show the owner card
     return
   }
   const msg = MSGS[revealed]
   const who = msg.r === 'user' ? 'user' : 'agent'   // estimate uses the agent typing beat
   typingFor = who
   render(); setTimeout(scrollBottom, 20)
-  const tDur = msg.r === 'estimate' ? 1200 : typeMs(msg.t, who)
+  const tDur = msg.r === 'estimate' ? 850 : typeMs(msg.t, who)
   setTimeout(() => {
     if (myId !== playId) return
     typingFor = null; revealed++
     render(); setTimeout(scrollBottom, 20)
-    const rDur = msg.r === 'estimate' ? 1400 : readMs(msg.t)
+    const rDur = msg.r === 'estimate' ? 900 : readMs(msg.t)
     setTimeout(() => step(myId), rDur)
   }, tDur)
 }
