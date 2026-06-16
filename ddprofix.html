@@ -449,26 +449,89 @@ function buildHero() {
 }
 
 // ── Render ──────────────────────────────────────────────────────────────────
+// Incremental: the panel is built ONCE when the chat opens; new messages are
+// appended in place (see syncChat). Never tear the whole panel down on a tick —
+// that re-triggers the open animation and makes the widget flicker.
 function render() {
+  // Modal layer (separate from the widget)
   const existing = document.getElementById('ownerModal')
-  if (existing) existing.remove()
-  if (showModal) { const m = buildModal(); m.id = 'ownerModal'; document.body.appendChild(m) }
+  if (showModal && !existing) { const m = buildModal(); m.id = 'ownerModal'; document.body.appendChild(m) }
+  else if (!showModal && existing) existing.remove()
 
   const root = document.getElementById('widget-root')
-  root.innerHTML = ''
-  if (isOpen) root.appendChild(buildPanel())
-  else { const tip = document.createElement('div'); tip.className = 'tooltip'; tip.textContent = CONFIG.tooltip; root.appendChild(tip) }
-  root.appendChild(buildBubble())
+  let bubble = root.querySelector('.bubble-btn')
+  let panel  = root.querySelector('.chat-panel')
+  let tip    = root.querySelector('.tooltip')
+
+  if (isOpen) {
+    if (tip) { tip.remove(); tip = null }
+    if (!panel) { panel = buildPanel(); root.insertBefore(panel, bubble || null) }
+    syncChat()
+  } else {
+    if (panel) { panel.remove(); panel = null }
+    if (!tip) { tip = document.createElement('div'); tip.className = 'tooltip'; tip.textContent = CONFIG.tooltip; root.insertBefore(tip, bubble || null) }
+  }
+
+  if (!bubble) { bubble = buildBubble(); root.appendChild(bubble) }
+  else updateBubble(bubble)
+}
+
+// Append any newly-revealed messages + the typing indicator, without rebuilding.
+function syncChat() {
+  const msgs = document.getElementById('msgsScroll')
+  if (!msgs) return
+  let shown = +(msgs.dataset.shown || 0)
+  if (revealed < shown) { msgs.innerHTML = ''; shown = 0 }   // replay reset
+  const typer = msgs.querySelector('.typing-indicator')
+  if (typer) typer.remove()
+  for (let i = shown; i < revealed; i++) msgs.appendChild(buildMessageNode(MSGS[i], i))
+  msgs.dataset.shown = revealed
+  if (typingFor === 'agent' || typingFor === 'user') msgs.appendChild(buildTypingNode(typingFor))
+
+  const panel = document.querySelector('.chat-panel')
+  if (panel) {
+    const bar = panel.querySelector('.send-bar')
+    if (finished && !bar) panel.appendChild(buildSendBar())
+    else if (!finished && bar) bar.remove()
+  }
+  scrollBottom()
+}
+
+function buildMessageNode(msg, i) {
+  if (msg.r === 'agent') {
+    const showAvatar = i === 0 || MSGS[i-1].r !== 'agent'
+    const wrap = document.createElement('div'); wrap.className = 'msg-agent'
+    wrap.innerHTML = `<div class="avatar-dot" style="visibility:${showAvatar?'visible':'hidden'}">${agentGlyph()}</div><div class="msg-agent-bubble">${esc(msg.t)}</div>`
+    return wrap
+  }
+  if (msg.r === 'user') {
+    const wrap = document.createElement('div'); wrap.className = 'msg-user'
+    wrap.innerHTML = `<div class="msg-user-bubble">${esc(msg.t)}</div>`
+    return wrap
+  }
+  return buildCostMessage()   // estimate
+}
+
+function buildTypingNode(who) {
+  const wrap = document.createElement('div')
+  wrap.className = 'typing-indicator ' + (who === 'user' ? 'msg-user' : 'msg-agent')
+  wrap.innerHTML = who === 'agent'
+    ? `<div class="avatar-dot">${agentGlyph()}</div><div class="typing-bubble"><span></span><span></span><span></span></div>`
+    : `<div class="typing-bubble user"><span></span><span></span><span></span></div>`
+  return wrap
 }
 
 function buildBubble() {
   const btn = document.createElement('button')
+  btn.onclick = () => { if (isOpen) { isOpen = false; stopPlay(); render() } else { startPlay() } }
+  updateBubble(btn)
+  return btn
+}
+function updateBubble(btn) {
   btn.className = 'bubble-btn ' + (isOpen ? 'bubble-open' : 'bubble-closed')
   btn.innerHTML = isOpen
     ? `<svg viewBox="0 0 14 14" fill="none" style="width:16px;height:16px"><path d="M1 1l12 12M13 1L1 13" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`
     : `<svg viewBox="0 0 24 24" fill="none" style="width:28px;height:28px"><path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="#fff"/></svg>`
-  btn.onclick = () => { if (isOpen) { isOpen = false; stopPlay(); render() } else { startPlay() } }
-  return btn
 }
 
 function buildPanel() {
@@ -510,40 +573,9 @@ function buildPanel() {
   strip.innerHTML = `<span class="pulse"></span>Sample conversation — plays automatically`
   panel.appendChild(strip)
 
-  // Messages
+  // Messages (populated incrementally by syncChat — built empty here)
   const msgs = document.createElement('div')
   msgs.className = 'msgs-scroll'; msgs.id = 'msgsScroll'
-
-  MSGS.forEach((msg, i) => {
-    if (i >= revealed) return
-    if (msg.r === 'agent') {
-      const showAvatar = i === 0 || MSGS[i-1].r !== 'agent'
-      const wrap = document.createElement('div')
-      wrap.className = 'msg-agent'
-      wrap.innerHTML = `
-        <div class="avatar-dot" style="visibility:${showAvatar?'visible':'hidden'}">${agentGlyph()}</div>
-        <div class="msg-agent-bubble">${esc(msg.t)}</div>`
-      msgs.appendChild(wrap)
-    } else if (msg.r === 'user') {
-      const wrap = document.createElement('div')
-      wrap.className = 'msg-user'
-      wrap.innerHTML = `<div class="msg-user-bubble">${esc(msg.t)}</div>`
-      msgs.appendChild(wrap)
-    } else if (msg.r === 'estimate') {
-      msgs.appendChild(buildCostMessage())
-    }
-  })
-
-  if (typingFor === 'agent') {
-    const tw = document.createElement('div'); tw.className = 'msg-agent'
-    tw.innerHTML = `<div class="avatar-dot">${agentGlyph()}</div><div class="typing-bubble"><span></span><span></span><span></span></div>`
-    msgs.appendChild(tw)
-  } else if (typingFor === 'user') {
-    const tw = document.createElement('div'); tw.className = 'msg-user'
-    tw.innerHTML = `<div class="typing-bubble user"><span></span><span></span><span></span></div>`
-    msgs.appendChild(tw)
-  }
-
   panel.appendChild(msgs)
 
   // Disabled input (it's a sample — nobody types)
@@ -557,9 +589,7 @@ function buildPanel() {
       </button>
     </div>`
   panel.appendChild(inp)
-
-  if (finished) panel.appendChild(buildSendBar())
-  return panel
+  return panel   // send bar is added by syncChat once the quote is revealed
 }
 
 function agentGlyph() {
@@ -607,6 +637,7 @@ function buildCostMessage() {
 // ── Send bar — fixed footer ─────────────────────────────────────────────────
 function buildSendBar() {
   const bar = document.createElement('div')
+  bar.className = 'send-bar'
   bar.style.cssText = 'background:#fff;border-top:1.5px solid var(--line);flex-shrink:0;padding:10px 14px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;'
   const left = document.createElement('div')
   left.innerHTML = `
