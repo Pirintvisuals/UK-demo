@@ -3,43 +3,82 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>D&amp;D Pro Fix · Instant Quote</title>
-  <!-- Client demo · D&D Pro Fix, Hatfield · dry lining / suspended ceilings / plastering fit-out.
-       Built from template.html. Brand palette: forest green + charcoal. Interactive tap-through + Calendly CTA. -->
+  <title>Instant Quote Demo</title>
+  <!-- Client sample · D&D Pro Fix, Hatfield · dry lining / suspended ceilings / plastering fit-out.
+       Cloned from template.html (self-playing engine). Forest-green palette = template default. -->
+  <!--
+  ══════════════════════════════════════════════════════════════════════════════
+   SELF-PLAYING QUOTE-AGENT SAMPLE  ·  one self-contained file per client
+  ══════════════════════════════════════════════════════════════════════════════
+   This is a "video" demo: the visitor clicks the chat bubble and the whole
+   conversation types itself out — question, answer, question, answer — then the
+   quote + "how the owner gets the lead" card appear automatically. Nothing is
+   interactive on purpose, so it always tells the same story. It is clearly
+   labelled as a SAMPLE throughout.
+
+   ┌─ TO MAKE A NEW DEMO, you only touch THREE things below: ──────────────────┐
+   │  1. THEME   → the brand colours (change the ~5 "core" hexes)              │
+   │  2. CONFIG  → company name / sub / tagline / niche / logo file            │
+   │  3. MSGS    → the questions + answers (the conversation)                  │
+   │  4. EST     → the itemised quote + lead card numbers                      │
+   │  The Calendly link is fixed for every sample — leave it alone.            │
+   │  Everything else (the engine, layout, animations) never changes.         │
+   └──────────────────────────────────────────────────────────────────────────┘
+   No backend, no API, no cost. Pure client-side. Vercel serves it at /<name>.
+  ══════════════════════════════════════════════════════════════════════════════
+  -->
   <style>
+    /* ── Brand theme (set from THEME in the script — do not hand-edit here) ── */
+    :root {
+      --bg:#0f1c14; --dark:#13311f; --mid:#1b4a2e; --brand:#2e7d4f; --bright:#46a866;
+      --dot:#5fd089; --chat-bg:#f3f8f4; --tint:#e6f4ea; --tint2:#eefaf0;
+      --line:#e3eee6; --ink:#1f5e38; --ink-soft:#1f6b3f; --ring:rgba(46,125,79,0.40);
+      --cta:#f59e0b; --cta2:#d97706;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      background: #0f1c14;
+      background: var(--bg);
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
     }
-    .page-center { text-align: center; color: #fff; user-select: none; }
+    .page-center { text-align: center; color: #fff; user-select: none; padding: 20px; }
+
+    /* SAMPLE badge on the landing page */
+    .sample-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18);
+      color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; padding: 7px 14px; border-radius: 999px; margin-bottom: 22px;
+    }
+    .sample-badge .pulse {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--bright);
+      box-shadow: 0 0 0 0 var(--ring); animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse { 0%{box-shadow:0 0 0 0 var(--ring)} 70%{box-shadow:0 0 0 9px rgba(0,0,0,0)} 100%{box-shadow:0 0 0 0 rgba(0,0,0,0)} }
+
     .logo-wrap {
       width: 96px; height: 96px; border-radius: 20px;
       overflow: hidden; margin: 0 auto 18px;
-      border: 2px solid rgba(46,125,79,0.45);
-      box-shadow: 0 0 0 4px rgba(46,125,79,0.16);
-      background: #ffffff;
-      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--ring);
+      box-shadow: 0 0 0 4px rgba(0,0,0,0.12);
+      background: #fff; display: flex; align-items: center; justify-content: center;
     }
     .logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
     .logo-fallback {
       font-size: 28px; font-weight: 900; letter-spacing: -1px;
-      background: linear-gradient(135deg, #46a866, #1b4a2e);
+      background: linear-gradient(135deg, var(--bright), var(--mid));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .company-name {
-      font-size: 28px; font-weight: 800;
-      letter-spacing: -0.5px; color: #ffffff; margin-bottom: 6px;
-    }
+    .company-name { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: #fff; margin-bottom: 6px; }
     .company-sub {
-      font-size: 12.5px; color: rgba(94,178,124,0.95);
-      font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 8px;
+      font-size: 12.5px; color: var(--bright);
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 10px;
     }
     .tagline { font-size: 14px; color: rgba(255,255,255,0.35); font-weight: 400; }
+    .watch-hint { margin-top: 26px; font-size: 13px; color: rgba(255,255,255,0.5); font-weight: 500; }
+    .watch-hint b { color: rgba(255,255,255,0.85); }
 
     #widget-root {
       position: fixed; bottom: 28px; right: 28px;
@@ -47,197 +86,149 @@
       align-items: flex-end; gap: 12px;
     }
 
-    @keyframes chatOpen {
-      from { opacity: 0; transform: translateY(32px) scale(0.95); }
-      to   { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes tooltipPop {
-      from { opacity: 0; transform: scale(0.88) translateY(8px); }
-      to   { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    @keyframes modalIn {
-      from { opacity: 0; transform: scale(0.94) translateY(20px); }
-      to   { opacity: 1; transform: scale(1) translateY(0); }
-    }
+    @keyframes chatOpen { from { opacity: 0; transform: translateY(32px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes tooltipPop { from { opacity: 0; transform: scale(0.88) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    @keyframes modalIn { from { opacity: 0; transform: scale(0.94) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
     .chat-panel {
       animation: chatOpen 0.42s cubic-bezier(0.16,1,0.3,1) both;
       width: 440px;
       height: clamp(480px, calc(100vh - 120px), 700px);
       display: flex; flex-direction: column;
-      background: #ffffff; border-radius: 22px; overflow: hidden;
-      box-shadow: 0 32px 96px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.3), 0 2px 8px rgba(27,74,46,0.18);
+      background: #fff; border-radius: 22px; overflow: hidden;
+      box-shadow: 0 32px 96px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.3);
     }
     .chat-header {
-      background: linear-gradient(135deg, #13311f 0%, #1b4a2e 55%, #2c6b43 100%);
+      background: linear-gradient(135deg, var(--dark) 0%, var(--mid) 55%, var(--brand) 100%);
       padding: 14px 18px 13px;
       display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
     }
+    .header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+
+    /* Slim "this is a sample" strip under the header */
+    .sample-strip {
+      background: var(--tint); color: var(--ink);
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 6px 16px; text-align: center; flex-shrink: 0;
+      border-bottom: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .sample-strip .pulse { width: 7px; height: 7px; border-radius: 50%; background: var(--brand); }
+
     .msgs-scroll {
       flex: 1; overflow-y: auto;
       padding: 18px 14px 18px 16px;
       display: flex; flex-direction: column; gap: 8px;
-      background: #f3f8f4;
-      scrollbar-width: thin; scrollbar-color: rgba(46,125,79,0.35) transparent;
+      background: var(--chat-bg);
+      scrollbar-width: thin; scrollbar-color: var(--ring) transparent;
     }
     .msgs-scroll::-webkit-scrollbar { width: 3px; }
-    .msgs-scroll::-webkit-scrollbar-thumb { background: rgba(46,125,79,0.4); border-radius: 10px; }
+    .msgs-scroll::-webkit-scrollbar-thumb { background: var(--ring); border-radius: 10px; }
 
-    .msg-agent { display: flex; align-items: flex-end; gap: 8px; }
+    .msg-agent { display: flex; align-items: flex-end; gap: 8px; animation: msgIn 0.3s ease both; }
     .msg-agent-bubble {
-      background: #ffffff; color: #1a2520;
+      background: #fff; color: #1a2520;
       border-radius: 18px 18px 18px 5px;
       padding: 11px 15px; max-width: 80%;
       font-size: 13.5px; line-height: 1.55;
       box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
     }
-    .msg-user { display: flex; justify-content: flex-end; }
+    .msg-user { display: flex; justify-content: flex-end; animation: msgIn 0.3s ease both; }
     .msg-user-bubble {
-      background: linear-gradient(135deg, #2e7d4f, #1b4a2e);
-      color: #ffffff; border-radius: 18px 18px 5px 18px;
+      background: linear-gradient(135deg, var(--brand), var(--mid));
+      color: #fff; border-radius: 18px 18px 5px 18px;
       padding: 11px 15px; max-width: 80%;
       font-size: 13.5px; line-height: 1.55; font-weight: 500;
-      box-shadow: 0 2px 8px rgba(27,74,46,0.35);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
     }
 
-    .qr-area {
-      padding: 8px 14px 10px; background: #fff;
-      border-top: 1px solid #e3eee6;
-      display: flex; flex-wrap: wrap; gap: 6px; flex-shrink: 0;
-    }
-    .qr-btn {
-      padding: 6px 14px; background: #e6f4ea; color: #1f5e38;
-      border: none; border-radius: 20px;
-      font-size: 12.5px; font-weight: 600;
-      cursor: default; font-family: inherit;
+    .avatar-dot {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--brand), var(--mid));
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
     }
 
-    /* Tap-to-advance answer chip */
-    .qr-hint { font-size: 10.5px; color: #8aa294; font-weight: 600; margin: 0 2px 6px; letter-spacing: .02em; }
-    .answer-chip {
-      padding: 9px 16px; background: linear-gradient(135deg,#2e7d4f,#1b4a2e);
-      color: #fff; border: none; border-radius: 20px;
-      font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
-      box-shadow: 0 3px 10px rgba(27,74,46,0.35);
-      transition: transform .15s, box-shadow .15s;
-      display: inline-flex; align-items: center; gap: 7px; text-align: left;
-    }
-    .answer-chip:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(27,74,46,0.45); }
-    .answer-chip .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(255,255,255,0.85); flex-shrink: 0; }
-
-    /* Bot typing indicator */
+    /* Typing indicators (agent = left/white, user = right/brand) */
     .typing-bubble {
-      background: #fff; border-radius: 18px 18px 18px 5px; padding: 12px 15px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.07); display: inline-flex; gap: 4px; align-items: center;
+      border-radius: 18px 18px 18px 5px; padding: 12px 15px;
+      display: inline-flex; gap: 4px; align-items: center;
+      background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.07);
     }
-    .typing-bubble span {
-      width: 7px; height: 7px; border-radius: 50%; background: #c2d5c9;
-      animation: typingDot 1.2s infinite ease-in-out;
-    }
+    .typing-bubble.user { border-radius: 18px 18px 5px 18px; background: linear-gradient(135deg, var(--brand), var(--mid)); }
+    .typing-bubble span { width: 7px; height: 7px; border-radius: 50%; background: #c2d5c9; animation: typingDot 1.2s infinite ease-in-out; }
+    .typing-bubble.user span { background: rgba(255,255,255,0.85); }
     .typing-bubble span:nth-child(2) { animation-delay: .18s; }
     .typing-bubble span:nth-child(3) { animation-delay: .36s; }
-    @keyframes typingDot { 0%,60%,100% { opacity: .3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+    @keyframes typingDot { 0%,60%,100% { opacity:.3; transform: translateY(0); } 30% { opacity:1; transform: translateY(-3px); } }
 
-    .input-area {
-      padding: 10px 14px 10px; background: #fff;
-      border-top: 1px solid #e3eee6; flex-shrink: 0;
-    }
+    .input-area { padding: 10px 14px; background: #fff; border-top: 1px solid var(--line); flex-shrink: 0; }
     .input-row { display: flex; gap: 8px; align-items: center; }
     .input-field {
       flex: 1; padding: 11px 16px; border-radius: 22px;
-      border: 1.5px solid #d9e7dd; font-size: 13.5px;
-      outline: none; background: #f5faf6; color: #111827; font-family: inherit;
+      border: 1.5px solid var(--line); font-size: 13.5px;
+      outline: none; background: var(--chat-bg); color: #111827; font-family: inherit;
     }
     .send-btn {
       width: 42px; height: 42px; flex-shrink: 0;
-      background: linear-gradient(135deg, #1b4a2e, #13311f);
+      background: linear-gradient(135deg, var(--mid), var(--dark));
       color: #fff; border: none; border-radius: 50%;
-      cursor: not-allowed; display: flex; align-items: center; justify-content: center;
-      opacity: 0.4;
+      cursor: not-allowed; display: flex; align-items: center; justify-content: center; opacity: 0.4;
     }
 
     .tooltip {
       animation: tooltipPop 0.26s cubic-bezier(0.16,1,0.3,1) both;
-      background: #ffffff; color: #1a2520;
+      background: #fff; color: #1a2520;
       font-size: 13px; font-weight: 600;
       padding: 9px 16px; border-radius: 22px;
       box-shadow: 0 6px 24px rgba(0,0,0,0.18), 0 2px 6px rgba(0,0,0,0.1);
       white-space: nowrap; position: relative; letter-spacing: -0.1px;
     }
     .tooltip::after {
-      content: ''; position: absolute; bottom: -7px; right: 30px;
-      width: 0; height: 0;
-      border-left: 7px solid transparent; border-right: 7px solid transparent;
-      border-top: 8px solid #ffffff;
+      content: ''; position: absolute; bottom: -7px; right: 30px; width: 0; height: 0;
+      border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 8px solid #fff;
       filter: drop-shadow(0 2px 2px rgba(0,0,0,0.06));
     }
 
     .bubble-btn {
       width: 62px; height: 62px; border-radius: 50%;
-      border: 2.5px solid #ffffff; cursor: pointer;
+      border: 2.5px solid #fff; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s, background 0.3s;
-      padding: 0;
+      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s, background 0.3s; padding: 0;
     }
     .bubble-btn:hover { transform: scale(1.07); }
     .bubble-open  { background: linear-gradient(135deg, #374151, #1f2937); box-shadow: 0 6px 20px rgba(0,0,0,0.35); }
-    .bubble-closed { background: linear-gradient(135deg, #1b4a2e, #13311f); box-shadow: 0 6px 24px rgba(0,0,0,0.5), 0 0 0 3px rgba(70,168,102,0.4); }
+    .bubble-closed { background: linear-gradient(135deg, var(--mid), var(--dark)); box-shadow: 0 6px 24px rgba(0,0,0,0.5), 0 0 0 3px var(--ring); }
 
-    .enquiry-btn {
-      width: 100%; padding: 14px;
-      background: linear-gradient(135deg, #2e7d4f, #1b4a2e);
-      color: #fff; border: none; border-radius: 12px;
-      font-weight: 800; font-size: 13.5px; cursor: pointer;
-      letter-spacing: 0.02em; font-family: inherit;
-      box-shadow: 0 4px 16px rgba(46,125,79,0.4);
-      transition: background 0.15s;
-    }
-    .enquiry-btn:hover { background: linear-gradient(135deg, #256b42, #14331f); }
-
-    .close-btn {
+    .icon-btn {
       color: rgba(255,255,255,0.8); background: rgba(255,255,255,0.12);
       border: none; cursor: pointer; border-radius: 8px;
-      width: 32px; height: 32px; display: flex;
-      align-items: center; justify-content: center; flex-shrink: 0;
-      transition: opacity 0.15s;
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: opacity 0.15s;
     }
-    .close-btn:hover { opacity: 0.65; }
+    .icon-btn:hover { opacity: 0.65; }
 
     /* ── Owner modal ─────────────────────────────────────────────── */
     .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(6,16,10,0.85);
-      backdrop-filter: blur(6px);
-      z-index: 99999;
-      display: flex; align-items: center; justify-content: center;
-      padding: 20px;
+      position: fixed; inset: 0; background: rgba(6,16,10,0.85);
+      backdrop-filter: blur(6px); z-index: 99999;
+      display: flex; align-items: center; justify-content: center; padding: 20px;
     }
     .modal-card {
       animation: modalIn 0.38s cubic-bezier(0.16,1,0.3,1) both;
-      background: #fff; border-radius: 22px;
-      max-width: 460px; width: 100%;
+      background: #fff; border-radius: 22px; max-width: 460px; width: 100%;
       max-height: calc(100vh - 40px); overflow-y: auto;
       box-shadow: 0 48px 140px rgba(0,0,0,0.7), 0 16px 48px rgba(0,0,0,0.4);
-      scrollbar-width: thin; scrollbar-color: rgba(46,125,79,0.35) transparent;
+      scrollbar-width: thin; scrollbar-color: var(--ring) transparent;
     }
     .modal-card::-webkit-scrollbar { width: 3px; }
-    .modal-card::-webkit-scrollbar-thumb { background: rgba(46,125,79,0.4); border-radius: 10px; }
+    .modal-card::-webkit-scrollbar-thumb { background: var(--ring); border-radius: 10px; }
 
     /* ── Mobile ──────────────────────────────────────────────────── */
     @media (max-width: 480px) {
       body { overflow-x: hidden; }
       #widget-root { right: 12px; left: 12px; bottom: 12px; gap: 10px; }
-      /* Open chat = full-screen sheet (reliable on real phones, ignores address-bar height) */
-      .chat-panel {
-        position: fixed;
-        inset: 0;
-        width: 100%;
-        height: 100vh;
-        height: 100dvh;
-        max-height: none;
-        border-radius: 0;
-        z-index: 100000;
-      }
+      .chat-panel { position: fixed; inset: 0; width: 100%; height: 100vh; height: 100dvh; max-height: none; border-radius: 0; z-index: 100000; }
       .tooltip { max-width: calc(100vw - 96px); white-space: normal; text-align: right; }
       .modal-overlay { padding: 12px; }
       .modal-card { max-height: calc(100dvh - 24px); }
@@ -247,12 +238,33 @@
 <body>
 
 <div class="page-center" id="hero"></div>
-
 <div id="widget-root"></div>
 
 <script>
 // ════════════════════════════════════════════════════════════════════════════
-//  CONFIG  ·  D&D Pro Fix, Hatfield
+//  1. THEME  ·  brand colours.  Change the ~5 "core" hexes to re-skin a demo.
+// ════════════════════════════════════════════════════════════════════════════
+const THEME = {
+  bg:     '#0f1c14',   // core · page background behind the logo
+  dark:   '#13311f',   // core · darkest brand shade (gradient start, big numbers)
+  mid:    '#1b4a2e',   // core · mid brand shade
+  brand:  '#2e7d4f',   // core · primary brand colour (buttons, user bubbles)
+  bright: '#46a866',   // core · lighter brand accent (highlights, online dot)
+  // —— the rest usually follow automatically; tweak only if the brand is unusual ——
+  dot:     '#5fd089',  // "online" status dot
+  chatBg:  '#f3f8f4',  // chat scroll background (very light brand tint)
+  tint:    '#e6f4ea',  // light tint for chips / pills
+  tint2:   '#eefaf0',  // alt light tint (footer note)
+  line:    '#e3eee6',  // hairline borders
+  ink:     '#1f5e38',  // dark brand text sitting on light tints
+  inkSoft: '#1f6b3f',  // medium brand text for prices
+  ring:    'rgba(46,125,79,0.40)', // soft glow ring (match brand, keep the 0.40 alpha)
+  cta:     '#f59e0b',  // Calendly CTA button — amber pops on every brand, leave as-is
+  cta2:    '#d97706',
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+//  2. CONFIG  ·  company identity
 // ════════════════════════════════════════════════════════════════════════════
 const CONFIG = {
   brand: {
@@ -260,53 +272,52 @@ const CONFIG = {
     sub: 'Dry Lining · Suspended Ceilings · Plastering',
     tagline: 'Hatfield · Instant quote system',
     initial: 'D&D',
-    logoSrc: 'dd-pro-fix-logo.jpg',
-    fbHandle: 'ddprofix',
+    logoSrc: 'dd-pro-fix-logo.jpg',  // e.g. 'apex-logo.jpg' (drop the file in this folder). Leave '' to use the initial.
+    fbHandle: 'ddprofix',            // or an FB page handle to pull their profile pic. logoSrc wins if both set.
     online: 'Online · Replies in seconds',
   },
-  tooltip: 'Get an instant estimate?',
-  quickReplies: ['Dry lining', 'Partition walls', 'Suspended ceilings', 'Plastering'],
+  niche: 'office fit-out',            // fills the opening line: "…a quote for your {niche}?"
+  tooltip: 'See how it works ▶',
   currency: { symbol: '£', locale: 'en-GB' },
   sendToOwnerLabel: 'Send to owner →',
-  // ── Your pitch CTA (shown inside the owner modal — this is YOU, not the trade) ──
-  calendly: 'https://calendly.com/pirint-milan/weboldal',
+
+  // ── Your pitch (shown inside the owner card). The Calendly link is FIXED for
+  //    every sample — always this one. Do not change it.
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
   ctaTitle: 'This is just a sample.',
-  ctaText: 'Want it live on your site catching leads like this for real?',
-  ctaButton: 'Grab 15 mins →',
+  ctaText: 'Want this on your own site, capturing real leads like this around the clock?',
+  ctaButton: 'Book a 15-min call →',
 }
 
-// ── Demo conversation ─────────────────────────────────────────────────────────
-//  user messages marked  tap:true  are where the prospect taps to advance.
+// ════════════════════════════════════════════════════════════════════════════
+//  3. MSGS  ·  the conversation (plays itself top-to-bottom, always the same).
+//     Keep the first agent line as the warm "Would you like a quote for your …?"
+//     opener, then alternate agent question / user answer.
+// ════════════════════════════════════════════════════════════════════════════
 const MSGS = [
-  { r:'agent', t:"Hi, welcome to D&D Pro Fix. Are you looking at a fit-out, partitioning, suspended ceilings, or plastering?" },
-  { r:'user',  t:"A full office fit-out for a unit we've taken on", tap:true },
+  { r:'agent', t:"Hi! Would you like a quote for your office fit-out?" },
+  { r:'user',  t:"Yes please — a full fit-out for a unit we've taken on" },
   { r:'agent', t:"Great project. Is it a bare shell / open-plan space, or refurbishing existing offices?" },
   { r:'user',  t:"Open-plan shell — needs dividing into offices and a meeting room" },
   { r:'agent', t:"Roughly what floor area are we working with?" },
   { r:'user',  t:"Around 150 square metres" },
   { r:'agent', t:"Noted, ~150 m². How many rooms do you need partitioned off?" },
   { r:'user',  t:"Three offices, a meeting room and a small kitchen area" },
-  { r:'agent', t:"For the partitions — standard metal stud and plasterboard, or acoustic / fire-rated?" },
-  { r:'user',  t:"Acoustic partitions for the offices and meeting room", tap:true },
-  { r:'agent', t:"Good call for an office. Do you want suspended ceilings throughout, with light fitting cut-ins?" },
+  { r:'agent', t:"For the partitions — standard metal stud, or acoustic / fire-rated?" },
+  { r:'user',  t:"Acoustic partitions for the offices and meeting room" },
+  { r:'agent', t:"Good call. Do you want suspended ceilings throughout, with light cut-ins?" },
   { r:'user',  t:"Yes, suspended ceilings across the whole floor" },
   { r:'agent', t:"Should we dry-line and insulate the perimeter walls too?" },
   { r:'user',  t:"Yes — dry-line and insulate the external walls" },
   { r:'agent', t:"After boarding, do you want a full tape, joint and skim ready for decoration?" },
   { r:'user',  t:"Tape and joint, then paint everything" },
-  { r:'agent', t:"What flooring are you after — carpet tiles, vinyl, or LVT?" },
-  { r:'user',  t:"Carpet tiles in the offices, vinyl in the kitchen" },
   { r:'agent', t:"Any doors and frames in the new partitions for us to supply and fit?" },
   { r:'user',  t:"Yes — five doors with frames and ironmongery" },
-  { r:'agent', t:"Is the unit empty and ready, with parking/access for materials?" },
-  { r:'user',  t:"Yes, empty unit with loading access" },
-  { r:'agent', t:"Perfect. What's the site postcode?" },
+  { r:'agent', t:"What's the site postcode?" },
   { r:'user',  t:"AL7 1AB" },
-  { r:'agent', t:"And roughly what budget are you working to for the fit-out?" },
-  { r:'user',  t:"Around £20,000 to £28,000", tap:true },
-  { r:'agent', t:"That's realistic for this spec. When would you like the works completed by?" },
-  { r:'user',  t:"Within the next 6 weeks ideally" },
-  { r:'agent', t:"Can I take your name?" },
+  { r:'agent', t:"And roughly what budget are you working to?" },
+  { r:'user',  t:"Around £20,000 to £28,000" },
+  { r:'agent', t:"And your name?" },
   { r:'user',  t:"Mark Ellison" },
   { r:'agent', t:"Thanks Mark — best number to reach you on?" },
   { r:'user',  t:"07700 900388" },
@@ -316,116 +327,136 @@ const MSGS = [
   { r:'estimate' }
 ]
 
-// ── Estimate data ─────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════
+//  4. EST  ·  the itemised quote + the owner lead card. Make the item amounts
+//     sum exactly to EST.mid, and keep budget bracketing mid (green "match").
+// ════════════════════════════════════════════════════════════════════════════
 const EST = {
   lower: 24_000, mid: 26_000, upper: 28_400,
   status: 'PRIORITY',
   items: [
-    { label:'Site setup, protection & waste removal',     note:'access, dust protection & skips',          amt: 1_150 },
-    { label:'Acoustic metal stud partitions',             note:'3 offices + meeting room',                 amt: 4_600 },
-    { label:'Plasterboard / boarding to partitions',      note:'double-board acoustic spec',               amt: 2_100 },
-    { label:'Dry-lining + insulation to perimeter walls', note:'insulated metal frame, ~150 m²',           amt: 2_500 },
-    { label:'Suspended ceilings — grid & tiles',          note:'MF/grid system across floor, ~150 m²',     amt: 3_800 },
-    { label:'Light fitting cut-ins & access panels',      note:'recessed lighting cut-outs',               amt:   650 },
-    { label:'Tape, joint & skim finish',                  note:'ready for decoration',                     amt: 2_200 },
-    { label:'Internal doors, frames & ironmongery (×5)',  note:'supply & fit, commercial spec',            amt: 1_850 },
-    { label:'Flooring — carpet tiles + vinyl (kitchen)',  note:'offices carpet, kitchen vinyl',            amt: 2_650 },
-    { label:'Painting & decorating throughout',           note:'walls, ceilings & woodwork',               amt: 2_400 },
-    { label:'Project management (6%)',                    note:'scheduling, trades & sign-off',            amt: 1_350 },
-    { label:'Contingency (~3%)',                          note:'unforeseen works allowance',               amt:   750 },
+    { label:'Site setup, protection & waste removal',     amt: 1_150 },
+    { label:'Acoustic metal stud partitions',             amt: 4_600 },
+    { label:'Plasterboard / boarding to partitions',      amt: 2_100 },
+    { label:'Dry-lining + insulation to perimeter walls', amt: 2_500 },
+    { label:'Suspended ceilings — grid & tiles',          amt: 3_800 },
+    { label:'Light fitting cut-ins & access panels',      amt:   650 },
+    { label:'Tape, joint & skim finish',                  amt: 2_200 },
+    { label:'Internal doors, frames & ironmongery (×5)',  amt: 1_850 },
+    { label:'Flooring — carpet tiles + vinyl (kitchen)',  amt: 2_650 },
+    { label:'Painting & decorating throughout',           amt: 2_400 },
+    { label:'Project management (6%)',                    amt: 1_350 },
+    { label:'Contingency (~3%)',                          amt:   750 },
   ],
   customer: {
     'Name':'Mark Ellison',
     'Phone':'07700 900388',
     'Email':'mark.ellison@gmail.com',
-    'Postcode':'AL7 1AB — Welwyn Garden City',
-    'Job type':'Office fit-out — ~150 m²',
-    'Their budget':'£20,000 – £28,000',
   },
-  extras: [
-    { icon:'🧱', label:'Partitions', val:'Acoustic — 4 rooms' },
-    { icon:'🏢', label:'Ceilings',   val:'Suspended, ~150 m²' },
-    { icon:'🚪', label:'Doors',      val:'5 sets supplied & fit' },
-    { icon:'🎨', label:'Finish',     val:'Tape, skim & paint' },
-  ],
-  timing: 'Within 6 weeks',
   timingShort: '~6 weeks',
-  jobTags: ['Office fit-out — 150 m²', 'Acoustic partitions ×4', 'Suspended ceilings', 'Dry-line + insulate', 'Tape, joint & skim', '5 doors + frames', 'Carpet tiles + vinyl', 'Full decoration'],
+  jobTags: ['Office fit-out — 150 m²', 'Acoustic partitions ×4', 'Suspended ceilings', 'Dry-line + insulate', '5 doors + frames', 'Full decoration'],
   budget: { low: 20_000, high: 28_000 },
   score: 95, scoreLabel: 'Premium Lead',
-  // Location data for the owner modal
   clientCity: 'Welwyn Garden City', clientZip: 'AL7 1AB',
   companyCity: 'Hatfield', distanceMi: 4,
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════════════════
+//  ▼▼▼  ENGINE — you should not need to edit anything below this line.  ▼▼▼
+// ════════════════════════════════════════════════════════════════════════════
+
+// Apply the theme to CSS variables.
+;(() => {
+  const r = document.documentElement.style
+  const map = { bg:'--bg', dark:'--dark', mid:'--mid', brand:'--brand', bright:'--bright',
+    dot:'--dot', chatBg:'--chat-bg', tint:'--tint', tint2:'--tint2', line:'--line',
+    ink:'--ink', inkSoft:'--ink-soft', ring:'--ring', cta:'--cta', cta2:'--cta2' }
+  for (const k in map) if (THEME[k]) r.setProperty(map[k], THEME[k])
+})()
+
 function money(n) { return CONFIG.currency.symbol + n.toLocaleString(CONFIG.currency.locale) }
 function esc(s) {
   if (!s && s !== 0) return ''
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
 }
-const firstName = (EST.customer.Name || '').trim().split(/\s+/)[0] || ''
+const firstName   = (EST.customer.Name || '').trim().split(/\s+/)[0] || ''
 const leadInitial = (EST.customer.Name || '?').trim().charAt(0).toUpperCase()
 const budgetMatch = EST.mid >= EST.budget.low && EST.mid <= EST.budget.high
 
-// Resolve the logo markup (local file → FB handle → initial)
+// ── Playback state ──────────────────────────────────────────────────────────
+let isOpen    = false
+let showModal = false
+let revealed  = 0          // how many MSGS entries are fully shown
+let typingFor = null       // 'agent' | 'user' | null  (who is mid-typing)
+let finished  = false
+let playId    = 0          // bumped to cancel any in-flight playback
+
+// Pacing — slow enough to read comfortably, like watching a video.
+function typeMs(t, who) { const len=(t||'').length; const base = who==='user'?620:780; return Math.min(1700, base + len*11) }
+function readMs(t)      { const len=(t||'').length; return Math.min(3200, 1150 + len*26) }
+
+function startPlay() {
+  revealed = 0; typingFor = null; finished = false; showModal = false
+  const myId = ++playId
+  isOpen = true
+  render(); setTimeout(scrollBottom, 60)
+  setTimeout(() => step(myId), 650)
+}
+function stopPlay() { playId++; typingFor = null }
+
+function step(myId) {
+  if (myId !== playId) return
+  if (revealed >= MSGS.length) {
+    finished = true; typingFor = null; render(); setTimeout(scrollBottom, 20)
+    setTimeout(() => { if (myId === playId) { showModal = true; render() } }, 1000)  // climax: show the owner card
+    return
+  }
+  const msg = MSGS[revealed]
+  const who = msg.r === 'user' ? 'user' : 'agent'   // estimate uses the agent typing beat
+  typingFor = who
+  render(); setTimeout(scrollBottom, 20)
+  const tDur = msg.r === 'estimate' ? 1200 : typeMs(msg.t, who)
+  setTimeout(() => {
+    if (myId !== playId) return
+    typingFor = null; revealed++
+    render(); setTimeout(scrollBottom, 20)
+    const rDur = msg.r === 'estimate' ? 1400 : readMs(msg.t)
+    setTimeout(() => step(myId), rDur)
+  }, tDur)
+}
+
+// ── Logo markup (file → FB handle → initial) ────────────────────────────────
 function logoMarkup(fallbackStyle) {
   const b = CONFIG.brand
-  if (b.logoSrc) {
-    return `<img src="${esc(b.logoSrc)}" style="width:100%;height:100%;object-fit:contain"
-              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-              alt="${esc(b.name)} logo">
-            <span class="logo-fallback" style="display:none;${fallbackStyle||''}">${esc(b.initial)}</span>`
-  }
-  if (b.fbHandle) {
-    return `<img src="https://graph.facebook.com/${esc(b.fbHandle)}/picture?type=large"
-              style="width:100%;height:100%;object-fit:cover"
-              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
-              alt="${esc(b.name)} logo">
-            <span class="logo-fallback" style="display:none;${fallbackStyle||''}">${esc(b.initial)}</span>`
-  }
+  const fb = `<span class="logo-fallback" style="display:none;${fallbackStyle||''}">${esc(b.initial)}</span>`
+  if (b.logoSrc) return `<img src="${esc(b.logoSrc)}" style="width:100%;height:100%;object-fit:contain" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="${esc(b.name)} logo">${fb}`
+  if (b.fbHandle) return `<img src="https://graph.facebook.com/${esc(b.fbHandle)}/picture?type=large" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" alt="${esc(b.name)} logo">${fb}`
   return `<span class="logo-fallback" style="display:flex;${fallbackStyle||''}">${esc(b.initial)}</span>`
 }
 
-// ── State ─────────────────────────────────────────────────────────────────────
-let isOpen    = false
-let showModal = false
-let typing    = false
-// Indices of the user messages the prospect taps to advance the scripted path.
-// (If none are marked, the whole conversation just renders at once — backwards compatible.)
-const STOPS = MSGS.map((m,i) => (m.r === 'user' && m.tap) ? i : -1).filter(i => i >= 0)
-let revealedCount = STOPS.length ? STOPS[0] : MSGS.length
-
-// ── Hero (landing page) ───────────────────────────────────────────────────────
+// ── Hero (landing page) ─────────────────────────────────────────────────────
 function buildHero() {
   const b = CONFIG.brand
-  document.title = b.name + ' · Instant Quote'
+  document.title = b.name + ' · Instant Quote (sample)'
   document.getElementById('hero').innerHTML = `
+    <div class="sample-badge"><span class="pulse"></span>Sample · not a live system</div>
     <div class="logo-wrap">${logoMarkup()}</div>
     <div class="company-name">${esc(b.name)}</div>
     <div class="company-sub">${esc(b.sub)}</div>
-    <div class="tagline">${esc(b.tagline)}</div>`
+    <div class="tagline">${esc(b.tagline)}</div>
+    <div class="watch-hint">Tap the chat bubble — it plays itself, <b>just watch</b> ↘</div>`
 }
 
-// ── Render ────────────────────────────────────────────────────────────────────
+// ── Render ──────────────────────────────────────────────────────────────────
 function render() {
   const existing = document.getElementById('ownerModal')
   if (existing) existing.remove()
-  if (showModal) {
-    const m = buildModal()
-    m.id = 'ownerModal'
-    document.body.appendChild(m)
-  }
+  if (showModal) { const m = buildModal(); m.id = 'ownerModal'; document.body.appendChild(m) }
 
   const root = document.getElementById('widget-root')
   root.innerHTML = ''
   if (isOpen) root.appendChild(buildPanel())
-  if (!isOpen) {
-    const tip = document.createElement('div')
-    tip.className = 'tooltip'
-    tip.textContent = CONFIG.tooltip
-    root.appendChild(tip)
-  }
+  else { const tip = document.createElement('div'); tip.className = 'tooltip'; tip.textContent = CONFIG.tooltip; root.appendChild(tip) }
   root.appendChild(buildBubble())
 }
 
@@ -434,57 +465,62 @@ function buildBubble() {
   btn.className = 'bubble-btn ' + (isOpen ? 'bubble-open' : 'bubble-closed')
   btn.innerHTML = isOpen
     ? `<svg viewBox="0 0 14 14" fill="none" style="width:16px;height:16px"><path d="M1 1l12 12M13 1L1 13" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`
-    : `<svg viewBox="0 0 24 24" fill="none" style="width:28px;height:28px"><path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="#a7e0bb"/></svg>`
-  btn.onclick = () => { isOpen = !isOpen; render(); if (isOpen) setTimeout(scrollBottom, 60) }
+    : `<svg viewBox="0 0 24 24" fill="none" style="width:28px;height:28px"><path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="#fff"/></svg>`
+  btn.onclick = () => { if (isOpen) { isOpen = false; stopPlay(); render() } else { startPlay() } }
   return btn
 }
 
 function buildPanel() {
   const panel = document.createElement('div')
   panel.className = 'chat-panel'
+  const b = CONFIG.brand
 
   // Header
-  const b = CONFIG.brand
   const hdr = document.createElement('header')
   hdr.className = 'chat-header'
   hdr.innerHTML = `
     <div style="display:flex;align-items:center;gap:12px">
       <div style="width:42px;height:42px;border-radius:10px;background:#fff;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center">
-        ${logoMarkup('font-size:12px;font-weight:900;color:#1b4a2e')}
+        ${logoMarkup('font-size:12px;font-weight:900;color:var(--mid)')}
       </div>
       <div>
         <div style="color:#fff;font-weight:700;font-size:13.5px;letter-spacing:-0.3px;line-height:1.2">${esc(b.name)}</div>
         <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
-          <div style="width:6px;height:6px;border-radius:50%;background:#5fd089;box-shadow:0 0 0 2px rgba(95,208,137,0.3)"></div>
-          <span style="color:#b8dcc4;font-size:11px;font-weight:500">${esc(b.online)}</span>
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--dot);box-shadow:0 0 0 2px rgba(255,255,255,0.18)"></div>
+          <span style="color:#cfe7d8;font-size:11px;font-weight:500">${esc(b.online)}</span>
         </div>
       </div>
     </div>
-    <button class="close-btn" id="closeBtn">
-      <svg viewBox="0 0 14 14" fill="none" style="width:12px;height:12px">
-        <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    </button>`
-  hdr.querySelector('#closeBtn').onclick = () => { isOpen = false; render() }
+    <div class="header-actions">
+      <button class="icon-btn" id="replayBtn" title="Replay">
+        <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2v3h-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="icon-btn" id="closeBtn" title="Close">
+        <svg viewBox="0 0 14 14" fill="none" style="width:12px;height:12px"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>`
+  hdr.querySelector('#closeBtn').onclick = () => { isOpen = false; stopPlay(); render() }
+  hdr.querySelector('#replayBtn').onclick = () => startPlay()
   panel.appendChild(hdr)
+
+  // "Sample" strip
+  const strip = document.createElement('div')
+  strip.className = 'sample-strip'
+  strip.innerHTML = `<span class="pulse"></span>Sample conversation — plays automatically`
+  panel.appendChild(strip)
 
   // Messages
   const msgs = document.createElement('div')
-  msgs.className = 'msgs-scroll'
-  msgs.id = 'msgsScroll'
+  msgs.className = 'msgs-scroll'; msgs.id = 'msgsScroll'
 
   MSGS.forEach((msg, i) => {
-    if (i >= revealedCount) return
+    if (i >= revealed) return
     if (msg.r === 'agent') {
-      const showAvatar = i === 0 || MSGS[i-1].r === 'user'
+      const showAvatar = i === 0 || MSGS[i-1].r !== 'agent'
       const wrap = document.createElement('div')
       wrap.className = 'msg-agent'
       wrap.innerHTML = `
-        <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#2e7d4f,#1b4a2e);flex-shrink:0;display:flex;align-items:center;justify-content:center;visibility:${showAvatar?'visible':'hidden'}">
-          <svg viewBox="0 0 14 14" fill="none" style="width:12px;height:12px">
-            <path d="M7 1C4.24 1 2 3.24 2 6c0 1.73.89 3.25 2.23 4.15L3.5 13 7 11.5l3.5 1.5-.73-2.85A5 5 0 0 0 12 6c0-2.76-2.24-5-5-5Z" fill="#c9f0d6"/>
-          </svg>
-        </div>
+        <div class="avatar-dot" style="visibility:${showAvatar?'visible':'hidden'}">${agentGlyph()}</div>
         <div class="msg-agent-bubble">${esc(msg.t)}</div>`
       msgs.appendChild(wrap)
     } else if (msg.r === 'user') {
@@ -497,149 +533,103 @@ function buildPanel() {
     }
   })
 
-  if (typing) {
-    const tw = document.createElement('div')
-    tw.className = 'msg-agent'
-    tw.innerHTML = `
-      <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#2e7d4f,#1b4a2e);flex-shrink:0;display:flex;align-items:center;justify-content:center">
-        <svg viewBox="0 0 14 14" fill="none" style="width:12px;height:12px"><path d="M7 1C4.24 1 2 3.24 2 6c0 1.73.89 3.25 2.23 4.15L3.5 13 7 11.5l3.5 1.5-.73-2.85A5 5 0 0 0 12 6c0-2.76-2.24-5-5-5Z" fill="#c9f0d6"/></svg>
-      </div>
-      <div class="typing-bubble"><span></span><span></span><span></span></div>`
+  if (typingFor === 'agent') {
+    const tw = document.createElement('div'); tw.className = 'msg-agent'
+    tw.innerHTML = `<div class="avatar-dot">${agentGlyph()}</div><div class="typing-bubble"><span></span><span></span><span></span></div>`
+    msgs.appendChild(tw)
+  } else if (typingFor === 'user') {
+    const tw = document.createElement('div'); tw.className = 'msg-user'
+    tw.innerHTML = `<div class="typing-bubble user"><span></span><span></span><span></span></div>`
     msgs.appendChild(tw)
   }
 
   panel.appendChild(msgs)
 
-  // Tap-to-advance answer chip (only while there's a pending scripted reply)
-  const pending = STOPS.includes(revealedCount) ? revealedCount : null
-  if (pending !== null && !typing) {
-    const qr = document.createElement('div')
-    qr.className = 'qr-area'
-    qr.style.flexDirection = 'column'
-    qr.style.alignItems = 'flex-start'
-    const hint = document.createElement('div')
-    hint.className = 'qr-hint'
-    hint.textContent = 'Tap to reply'
-    qr.appendChild(hint)
-    const chip = document.createElement('button')
-    chip.className = 'answer-chip'
-    chip.innerHTML = `<span class="dot"></span>${esc(MSGS[pending].t)}`
-    chip.onclick = advance
-    qr.appendChild(chip)
-    panel.appendChild(qr)
-  }
-
-  // Input (disabled — demo)
+  // Disabled input (it's a sample — nobody types)
   const inp = document.createElement('div')
   inp.className = 'input-area'
   inp.innerHTML = `
     <div class="input-row">
-      <input class="input-field" type="text" placeholder="Type a message…" disabled>
+      <input class="input-field" type="text" placeholder="Sample — no typing needed" disabled>
       <button class="send-btn" disabled>
-        <svg viewBox="0 0 20 20" fill="none" style="width:18px;height:18px;transform:translateX(1px)">
-          <path d="M3 10L17 3l-4 7 4 7L3 10Z" fill="white"/>
-        </svg>
+        <svg viewBox="0 0 20 20" fill="none" style="width:18px;height:18px;transform:translateX(1px)"><path d="M3 10L17 3l-4 7 4 7L3 10Z" fill="white"/></svg>
       </button>
     </div>`
   panel.appendChild(inp)
 
-  // Fixed send-to-owner bar (only once the quote has been revealed)
-  if (revealedCount >= MSGS.length) panel.appendChild(buildSendBar())
-
+  if (finished) panel.appendChild(buildSendBar())
   return panel
 }
 
-function scrollBottom() {
-  const el = document.getElementById('msgsScroll')
-  if (el) el.scrollTop = el.scrollHeight
+function agentGlyph() {
+  return `<svg viewBox="0 0 14 14" fill="none" style="width:12px;height:12px"><path d="M7 1C4.24 1 2 3.24 2 6c0 1.73.89 3.25 2.23 4.15L3.5 13 7 11.5l3.5 1.5-.73-2.85A5 5 0 0 0 12 6c0-2.76-2.24-5-5-5Z" fill="#c9f0d6"/></svg>`
 }
 
-// Reveal the prospect's tapped answer, show a brief "typing…" beat, then the next batch.
-function advance() {
-  if (typing) return
-  const s = revealedCount            // the pending stop = this user message
-  revealedCount = s + 1              // phase A: show their answer immediately
-  typing = true
-  render(); setTimeout(scrollBottom, 20)
-  setTimeout(() => {                 // phase B: bot replies with the next batch
-    typing = false
-    const idx = STOPS.indexOf(s)
-    revealedCount = (idx + 1 < STOPS.length) ? STOPS[idx + 1] : MSGS.length
-    render(); setTimeout(scrollBottom, 20)
-  }, 850)
-}
+function scrollBottom() { const el = document.getElementById('msgsScroll'); if (el) el.scrollTop = el.scrollHeight }
 
-// ── Cost breakdown — chat message ─────────────────────────────────────────────
+// ── Cost breakdown — chat message ───────────────────────────────────────────
 function buildCostMessage() {
   const wrap = document.createElement('div')
-  wrap.className = 'msg-agent'
-  wrap.style.cssText = 'align-items:flex-start;'
+  wrap.className = 'msg-agent'; wrap.style.cssText = 'align-items:flex-start;'
 
   const avatar = document.createElement('div')
-  avatar.style.cssText = 'width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#2e7d4f,#1b4a2e);flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;'
-  avatar.innerHTML = `<svg viewBox="0 0 14 14" fill="none" style="width:12px;height:12px"><path d="M7 1C4.24 1 2 3.24 2 6c0 1.73.89 3.25 2.23 4.15L3.5 13 7 11.5l3.5 1.5-.73-2.85A5 5 0 0 0 12 6c0-2.76-2.24-5-5-5Z" fill="#c9f0d6"/></svg>`
+  avatar.className = 'avatar-dot'; avatar.style.marginTop = '2px'
+  avatar.innerHTML = agentGlyph()
 
   const rows = EST.items.map((item, i) => `
-    <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#374151;padding:4px 0;${i<EST.items.length-1?'border-bottom:1px solid #eef4ef':''}">
+    <div style="display:flex;justify-content:space-between;gap:10px;font-size:12px;color:#374151;padding:4px 0;${i<EST.items.length-1?'border-bottom:1px solid var(--line)':''}">
       <span>${esc(item.label)}</span>
-      <span style="font-weight:700;color:#1f6b3f;white-space:nowrap">${money(item.amt)}</span>
+      <span style="font-weight:700;color:var(--ink-soft);white-space:nowrap">${money(item.amt)}</span>
     </div>`).join('')
 
   const bubble = document.createElement('div')
-  bubble.className = 'msg-agent-bubble'
-  bubble.style.cssText = 'max-width:92%;padding:12px 14px;'
+  bubble.className = 'msg-agent-bubble'; bubble.style.cssText = 'max-width:92%;padding:12px 14px;'
   bubble.innerHTML = `
     <div style="font-size:12.5px;color:#374151;font-weight:600;margin-bottom:10px">Here's your estimate${firstName?', '+esc(firstName):''}. This is how the numbers came out:</div>
     <div style="display:flex;flex-direction:column;gap:0;margin-bottom:10px;">${rows}</div>
-    <div style="background:linear-gradient(135deg,#e6f4ea,#d4ecdc);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
+    <div style="background:linear-gradient(135deg,var(--tint),var(--tint2));border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;">
       <div>
-        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#1f5e38;font-weight:700;margin-bottom:2px">Estimated total</div>
-        <div style="font-size:24px;font-weight:900;color:#13311f;letter-spacing:-1px;line-height:1">${money(EST.mid)}</div>
+        <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--ink);font-weight:700;margin-bottom:2px">Estimated total</div>
+        <div style="font-size:24px;font-weight:900;color:var(--dark);letter-spacing:-1px;line-height:1">${money(EST.mid)}</div>
         <div style="font-size:10px;color:#6b7280;margin-top:2px">${money(EST.lower)} – ${money(EST.upper)} range</div>
       </div>
-      <div style="background:rgba(46,125,79,0.16);border:1px solid rgba(46,125,79,0.4);border-radius:8px;padding:4px 10px;flex-shrink:0;text-align:center">
-        <div style="font-size:9px;color:#1f5e38;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Timing</div>
-        <div style="font-size:11px;color:#1f5e38;font-weight:600">${esc(EST.timingShort)}</div>
+      <div style="background:rgba(0,0,0,0.04);border:1px solid var(--line);border-radius:8px;padding:4px 10px;flex-shrink:0;text-align:center">
+        <div style="font-size:9px;color:var(--ink);font-weight:700;text-transform:uppercase;letter-spacing:.08em">Timing</div>
+        <div style="font-size:11px;color:var(--ink);font-weight:600">${esc(EST.timingShort)}</div>
       </div>
     </div>`
 
-  wrap.appendChild(avatar)
-  wrap.appendChild(bubble)
+  wrap.appendChild(avatar); wrap.appendChild(bubble)
   return wrap
 }
 
-// ── Send bar — fixed footer ───────────────────────────────────────────────────
+// ── Send bar — fixed footer ─────────────────────────────────────────────────
 function buildSendBar() {
   const bar = document.createElement('div')
-  bar.style.cssText = 'background:#fff;border-top:1.5px solid #b7e0c2;flex-shrink:0;padding:10px 14px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;'
-
+  bar.style.cssText = 'background:#fff;border-top:1.5px solid var(--line);flex-shrink:0;padding:10px 14px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;'
   const left = document.createElement('div')
   left.innerHTML = `
     <div style="font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#6b7280;font-weight:700;margin-bottom:1px">Estimated quote</div>
-    <div style="font-size:20px;font-weight:900;color:#1f6b3f;letter-spacing:-1px;line-height:1">${money(EST.mid)}</div>`
-
+    <div style="font-size:20px;font-weight:900;color:var(--ink-soft);letter-spacing:-1px;line-height:1">${money(EST.mid)}</div>`
   const btn = document.createElement('button')
   btn.textContent = CONFIG.sendToOwnerLabel
-  btn.style.cssText = 'background:linear-gradient(135deg,#2e7d4f,#1b4a2e);color:#fff;border:none;border-radius:10px;padding:10px 15px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 3px 10px rgba(46,125,79,0.4);flex-shrink:0;'
-  btn.onclick = function() { showModal = true; render() }
-
-  bar.appendChild(left)
-  bar.appendChild(btn)
+  btn.style.cssText = 'background:linear-gradient(135deg,var(--brand),var(--mid));color:#fff;border:none;border-radius:10px;padding:10px 15px;font-size:11.5px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.2);flex-shrink:0;'
+  btn.onclick = () => { showModal = true; render() }
+  bar.appendChild(left); bar.appendChild(btn)
   return bar
 }
 
-// ── Owner notification modal ──────────────────────────────────────────────────
+// ── Owner notification modal ────────────────────────────────────────────────
 function buildModal() {
   const overlay = document.createElement('div')
   overlay.className = 'modal-overlay'
   overlay.onclick = e => { if (e.target === overlay) { showModal = false; render() } }
-
   const now = new Date().toLocaleTimeString(CONFIG.currency.locale, { hour:'2-digit', minute:'2-digit' })
 
   const jobTags = EST.jobTags.map(t =>
-    `<span style="font-size:12px;font-weight:600;color:#1f5e38;background:#e6f4ea;padding:4px 12px;border-radius:20px">${esc(t)}</span>`
+    `<span style="font-size:12px;font-weight:600;color:var(--ink);background:var(--tint);padding:4px 12px;border-radius:20px">${esc(t)}</span>`
   ).join('') +
-    `<span style="font-size:12px;font-weight:600;color:#1f5e38;background:#eefaf0;border:1px solid #b7e0c2;padding:4px 12px;border-radius:20px">${esc(EST.timingShort)}</span>`
+    `<span style="font-size:12px;font-weight:600;color:var(--ink);background:var(--tint2);border:1px solid var(--line);padding:4px 12px;border-radius:20px">${esc(EST.timingShort)}</span>`
 
   const budgetBox = budgetMatch
     ? `<div style="display:flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:8px 12px">
@@ -655,58 +645,53 @@ function buildModal() {
 
   const ctaBlock = CONFIG.calendly ? `
     <div style="padding:6px 18px 20px">
-      <div style="background:linear-gradient(135deg,#13311f,#1b4a2e);border-radius:14px;padding:16px 18px;text-align:center">
+      <div style="background:linear-gradient(135deg,var(--dark),var(--mid));border-radius:14px;padding:16px 18px;text-align:center">
         <div style="font-size:13px;font-weight:800;color:#fff;letter-spacing:-0.2px">${esc(CONFIG.ctaTitle || '')}</div>
-        <div style="font-size:12px;color:#b8dcc4;margin:4px 0 12px;line-height:1.45">${esc(CONFIG.ctaText || '')}</div>
+        <div style="font-size:12px;color:#cfe7d8;margin:4px 0 12px;line-height:1.45">${esc(CONFIG.ctaText || '')}</div>
         <a href="${esc(CONFIG.calendly)}" target="_blank" rel="noopener"
-           style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;text-decoration:none;font-weight:700;font-size:13px;padding:11px 22px;border-radius:10px;box-shadow:0 4px 14px rgba(245,158,11,0.45)">${esc(CONFIG.ctaButton || 'Book a call →')}</a>
+           style="display:inline-block;background:linear-gradient(135deg,var(--cta),var(--cta2));color:#fff;text-decoration:none;font-weight:700;font-size:13px;padding:11px 22px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,0.25)">${esc(CONFIG.ctaButton || 'Book a call →')}</a>
       </div>
     </div>` : ''
 
   const card = document.createElement('div')
   card.className = 'modal-card'
   card.innerHTML = `
-    <!-- Modal header -->
-    <div style="background:linear-gradient(135deg,#13311f,#1b4a2e,#2c6b43);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-radius:22px 22px 0 0">
+    <div style="background:linear-gradient(135deg,var(--dark),var(--mid),var(--brand));padding:16px 20px;display:flex;align-items:center;justify-content:space-between;border-radius:22px 22px 0 0">
       <div>
-        <div style="font-size:10px;color:#b8dcc4;text-transform:uppercase;letter-spacing:.14em;font-weight:600;margin-bottom:3px">Owner notification</div>
-        <div style="color:#fff;font-weight:800;font-size:15px;letter-spacing:-0.3px">How D&amp;D Pro Fix receives it</div>
+        <div style="font-size:10px;color:#cfe7d8;text-transform:uppercase;letter-spacing:.14em;font-weight:600;margin-bottom:3px">Owner notification · sample</div>
+        <div style="color:#fff;font-weight:800;font-size:15px;letter-spacing:-0.3px">How ${esc(CONFIG.brand.name)} receives it</div>
       </div>
       <button id="modalClose" style="background:rgba(255,255,255,0.12);border:none;color:#fff;width:34px;height:34px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;line-height:1">✕</button>
     </div>
 
-    <!-- Notification mockup -->
     <div style="padding:18px 18px 6px">
-      <div style="background:#f6faf7;border:1.5px solid #dceae1;border-radius:16px;overflow:hidden">
+      <div style="background:var(--chat-bg);border:1.5px solid var(--line);border-radius:16px;overflow:hidden">
 
-        <!-- Notification bar -->
-        <div style="background:linear-gradient(90deg,#1b4a2e,#13311f);padding:9px 16px;display:flex;align-items:center;justify-content:space-between">
+        <div style="background:linear-gradient(90deg,var(--mid),var(--dark));padding:9px 16px;display:flex;align-items:center;justify-content:space-between">
           <div style="display:flex;align-items:center;gap:8px">
-            <div style="width:8px;height:8px;border-radius:50%;background:#5fd089;box-shadow:0 0 0 3px rgba(95,208,137,0.3)"></div>
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--dot);box-shadow:0 0 0 3px rgba(255,255,255,0.18)"></div>
             <span style="color:#fff;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.1em">New ${esc(EST.scoreLabel)}</span>
           </div>
-          <span style="color:#a9d4ba;font-size:11px;font-weight:500">${now}</span>
+          <span style="color:#cfe7d8;font-size:11px;font-weight:500">${now}</span>
         </div>
 
-        <!-- Lead info -->
-        <div style="padding:16px 16px 12px;border-bottom:1px solid #e3eee6">
+        <div style="padding:16px 16px 12px;border-bottom:1px solid var(--line)">
           <div style="display:flex;align-items:flex-start;gap:12px">
-            <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#d9f0e0,#b7e0c2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;font-weight:900;color:#1f5e38">${esc(leadInitial)}</div>
+            <div style="width:44px;height:44px;border-radius:12px;background:var(--tint);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;font-weight:900;color:var(--ink)">${esc(leadInitial)}</div>
             <div style="flex:1">
               <div style="font-size:16px;font-weight:800;color:#111827;letter-spacing:-0.3px">${esc(EST.customer.Name)}</div>
               <div style="font-size:12.5px;color:#6b7280;margin-top:2px">${esc(EST.customer.Email)}</div>
               <div style="display:flex;align-items:center;gap:6px;margin-top:6px">
-                <span style="font-size:12px;font-weight:700;color:#1f5e38;background:#e6f4ea;padding:3px 10px;border-radius:20px">📞 ${esc(EST.customer.Phone)}</span>
+                <span style="font-size:12px;font-weight:700;color:var(--ink);background:var(--tint);padding:3px 10px;border-radius:20px">📞 ${esc(EST.customer.Phone)}</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Location + distance -->
-        <div style="padding:12px 16px;border-bottom:1px solid #e3eee6;background:#fff">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--line);background:#fff">
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
             <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:#e6f4ea;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">📍</div>
+              <div style="width:32px;height:32px;border-radius:8px;background:var(--tint);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">📍</div>
               <div>
                 <div style="font-size:9.5px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;font-weight:600">Lead location</div>
                 <div style="font-size:13.5px;font-weight:700;color:#111827">${esc(EST.clientCity)} · ${esc(EST.clientZip)}</div>
@@ -714,21 +699,20 @@ function buildModal() {
             </div>
             <div style="text-align:right">
               <div style="font-size:9.5px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;font-weight:600">From you</div>
-              <div style="font-size:20px;font-weight:900;color:#1f6b3f;letter-spacing:-1px;line-height:1">~${EST.distanceMi} mi</div>
+              <div style="font-size:20px;font-weight:900;color:var(--ink-soft);letter-spacing:-1px;line-height:1">~${EST.distanceMi} mi</div>
               <div style="font-size:10px;color:#9ca3af">from ${esc(EST.companyCity)}</div>
             </div>
           </div>
-          <div style="margin-top:10px;height:5px;background:#e3eee6;border-radius:3px;overflow:hidden">
-            <div style="width:26%;height:100%;background:linear-gradient(90deg,#5fd089,#1b4a2e);border-radius:3px"></div>
+          <div style="margin-top:10px;height:5px;background:var(--line);border-radius:3px;overflow:hidden">
+            <div style="width:26%;height:100%;background:linear-gradient(90deg,var(--dot),var(--mid));border-radius:3px"></div>
           </div>
         </div>
 
-        <!-- Estimate + budget match -->
-        <div style="padding:14px 16px;border-bottom:1px solid #e3eee6">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--line)">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px">
             <div>
               <div style="font-size:9.5px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:3px">Calculated quote</div>
-              <div style="font-size:30px;font-weight:900;color:#13311f;letter-spacing:-1.5px;line-height:1">${money(EST.mid)}</div>
+              <div style="font-size:30px;font-weight:900;color:var(--dark);letter-spacing:-1.5px;line-height:1">${money(EST.mid)}</div>
               <div style="font-size:11px;color:#9ca3af;margin-top:3px">${money(EST.lower)} – ${money(EST.upper)}</div>
             </div>
             <div style="text-align:right">
@@ -740,34 +724,31 @@ function buildModal() {
           ${budgetBox}
         </div>
 
-        <!-- Job details -->
-        <div style="padding:12px 16px;border-bottom:1px solid #e3eee6;background:#fff">
+        <div style="padding:12px 16px;border-bottom:1px solid var(--line);background:#fff">
           <div style="font-size:9.5px;color:#9ca3af;text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-bottom:8px">Job details</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px">${jobTags}</div>
         </div>
 
-        <!-- Lead score -->
-        <div style="padding:12px 16px;background:#f6faf7">
+        <div style="padding:12px 16px;background:var(--chat-bg)">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
             <span style="font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.12em;font-weight:600">Lead score</span>
             <div style="display:flex;align-items:center;gap:7px">
-              <span style="font-size:22px;font-weight:900;color:#1f6b3f;letter-spacing:-0.5px">${EST.score}<span style="font-size:12px;font-weight:600;color:#9ca3af">/100</span></span>
-              <span style="font-size:10.5px;font-weight:700;color:#fff;background:#2e7d4f;padding:3px 10px;border-radius:20px">${esc(EST.scoreLabel)}</span>
+              <span style="font-size:22px;font-weight:900;color:var(--ink-soft);letter-spacing:-0.5px">${EST.score}<span style="font-size:12px;font-weight:600;color:#9ca3af">/100</span></span>
+              <span style="font-size:10.5px;font-weight:700;color:#fff;background:var(--brand);padding:3px 10px;border-radius:20px">${esc(EST.scoreLabel)}</span>
             </div>
           </div>
-          <div style="height:6px;border-radius:3px;background:#e3eee6;overflow:hidden">
-            <div style="height:100%;width:${EST.score}%;background:linear-gradient(90deg,#5fd089,#1b4a2e);border-radius:3px"></div>
+          <div style="height:6px;border-radius:3px;background:var(--line);overflow:hidden">
+            <div style="height:100%;width:${EST.score}%;background:linear-gradient(90deg,var(--dot),var(--mid));border-radius:3px"></div>
           </div>
         </div>
 
       </div>
     </div>
 
-    <!-- Footer note -->
     <div style="padding:14px 18px 8px;text-align:center">
-      <div style="display:flex;align-items:center;justify-content:center;gap:7px;background:#eefaf0;border:1px solid #b7e0c2;border-radius:12px;padding:10px 16px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:7px;background:var(--tint2);border:1px solid var(--line);border-radius:12px;padding:10px 16px">
         <span style="font-size:14px">✉️</span>
-        <span style="font-size:12px;color:#1f5e38;font-weight:600">The customer received an automatic confirmation email</span>
+        <span style="font-size:12px;color:var(--ink);font-weight:600">The customer received an automatic confirmation email</span>
       </div>
     </div>
     ${ctaBlock}`
