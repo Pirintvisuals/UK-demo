@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote Demo</title>
+  <!-- Client sample · Gregory Climate Services (GCS) · air conditioning install/service/maintenance, Doncaster.
+       Data-only file: the engine + styles live in /quote-agent.js + /quote-agent.css.
+       To make a new demo, copy template.html and edit the 4 blocks below. -->
+  <link rel="stylesheet" href="/quote-agent.css">
+</head>
+<body>
+<div class="page-center" id="hero"></div>
+<div id="widget-root"></div>
+
+<script>
+// 1. THEME — brand colours (deep navy + GCS blue + orange accent, from the logo)
+const THEME = {
+  bg:'#0c2032', dark:'#102e47', mid:'#1d5b85', brand:'#2f88d0', bright:'#5fb0ec',
+  dot:'#7cc4f2', chatBg:'#f2f8fc', tint:'#e2f0fb', tint2:'#eef7fd', line:'#dbe9f3',
+  ink:'#1c6aa8', inkSoft:'#2a7cbf', ring:'rgba(47,136,208,0.40)', cta:'#f59e0b', cta2:'#d97706',
+}
+
+// 2. CONFIG — company identity (Calendly link is fixed for every sample)
+const CONFIG = {
+  brand: {
+    name: 'Gregory Climate Services',
+    sub: 'Air Conditioning · Service · Maintenance',
+    tagline: 'Doncaster · Instant quote system',
+    initial: 'GCS',
+    logoSrc: 'gregory-logo.jpg',
+    fbHandle: '',
+    online: 'Online · Replies in seconds',
+  },
+  niche: 'air conditioning installation',
+  tooltip: 'See how it works ▶',
+  currency: { symbol: '£', locale: 'en-GB' },
+  sendToOwnerLabel: 'Send to owner →',
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
+  ctaTitle: 'This is just a sample.',
+  ctaText: 'Want this on your own site, capturing real leads like this around the clock?',
+  ctaButton: 'Book a 15-min call →',
+}
+
+// 3. MSGS — the conversation (plays itself, always the same single route)
+const MSGS = [
+  { r:'agent', t:"Hi! Would you like a quote for your air conditioning installation?" },
+  { r:'user',  t:"Yes please, the house gets unbearable in summer" },
+  { r:'agent', t:"We can sort that. Is this for your home or a commercial space?" },
+  { r:'user',  t:"Our home" },
+  { r:'agent', t:"Great. How many rooms would you like cooled?" },
+  { r:'user',  t:"Three — the lounge and two bedrooms" },
+  { r:'agent', t:"Perfect for a multi-split system — one outdoor unit feeding all three. Wall-mounted indoor units OK?" },
+  { r:'user',  t:"Yes, wall-mounted is fine" },
+  { r:'agent', t:"Would you like heat-pump units that warm the rooms in winter too, not just cool?" },
+  { r:'user',  t:"Oh that'd be ideal, yes" },
+  { r:'agent', t:"Any preferred make, or shall we spec Daikin? Quiet and very efficient." },
+  { r:'user',  t:"Daikin sounds good" },
+  { r:'agent', t:"Smart Wi-Fi control as well, so you can run it from your phone?" },
+  { r:'user',  t:"Yes, definitely" },
+  { r:'agent', t:"Roughly how far is the outdoor unit from the rooms — same wall, or a fair pipe run?" },
+  { r:'user',  t:"Maybe 6–8 metres of pipework to the furthest room" },
+  { r:'agent', t:"Noted. Would you be interested in spreading the cost over finance?" },
+  { r:'user',  t:"Possibly, yeah — good to know it's there" },
+  { r:'agent', t:"We offer it. What's your postcode?" },
+  { r:'user',  t:"DN10 6JQ" },
+  { r:'agent', t:"Roughly what budget did you have in mind?" },
+  { r:'user',  t:"Somewhere around £6,000" },
+  { r:'agent', t:"And your name?" },
+  { r:'user',  t:"Daniel Foster" },
+  { r:'agent', t:"Thanks Daniel — best number to reach you on?" },
+  { r:'user',  t:"07700 900248" },
+  { r:'agent', t:"And your email?" },
+  { r:'user',  t:"daniel.foster@gmail.com" },
+  { r:'agent', t:"Thanks Daniel — putting your air con quote together now." },
+  { r:'estimate' }
+]
+
+// 4. EST — itemised quote + lead card (items must sum to EST.mid)
+const EST = {
+  lower: 5_900, mid: 6_400, upper: 7_100,
+  status: 'PRIORITY',
+  items: [
+    { label:'Outdoor condenser — multi-split, 3-port (Daikin)', amt: 1_450 },
+    { label:'3× indoor wall units — supply (heat pump)',        amt: 1_560 },
+    { label:'Refrigerant pipework & interconnect cabling',      amt:   680 },
+    { label:'Installation — labour (2 engineers, 2 days)',      amt: 1_400 },
+    { label:'Electrical connection & fused spurs',              amt:   340 },
+    { label:'Wall core drilling (×3) + brackets & trunking',    amt:   420 },
+    { label:'F-Gas / REFCOM commissioning & certification',     amt:   220 },
+    { label:'System vacuum & refrigerant charge',              amt:   150 },
+    { label:'Smart Wi-Fi controllers (×3)',                     amt:   180 },
+  ],
+  customer: {
+    'Name':'Daniel Foster',
+    'Phone':'07700 900248',
+    'Email':'daniel.foster@gmail.com',
+  },
+  timingShort: 'Within 2–3 weeks',
+  jobTags: ['3-zone multi-split', '3× wall units', 'Daikin heat pump', 'REFCOM / F-Gas certified', 'Smart Wi-Fi control', 'Finance available'],
+  budget: { low: 5_000, high: 7_000 },
+  score: 93, scoreLabel: 'Premium Lead',
+  clientCity: 'Bawtry', clientZip: 'DN10 6JQ',
+  companyCity: 'Doncaster', distanceMi: 9,
+}
+</script>
+<script src="/quote-agent.js"></script>
+</body>
+</html>
