@@ -15,7 +15,7 @@
   for (const k in map) if (THEME[k]) r.setProperty(map[k], THEME[k])
 })()
 
-function money(n) { return CONFIG.currency.symbol + n.toLocaleString(CONFIG.currency.locale) }
+function money(n) { return (n < 0 ? '−' : '') + CONFIG.currency.symbol + Math.abs(n).toLocaleString(CONFIG.currency.locale) }
 function esc(s) {
   if (!s && s !== 0) return ''
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
