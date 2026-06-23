@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote Demo</title>
+  <!-- Client sample · The Polish Pete · bathroom & kitchen fitting, renovations, Berkshire.
+       Data-only file: the engine + styles live in /quote-agent.js + /quote-agent.css.
+       To make a new demo, copy template.html and edit the 4 blocks below. -->
+  <link rel="stylesheet" href="/quote-agent.css">
+</head>
+<body>
+<div class="page-center" id="hero"></div>
+<div id="widget-root"></div>
+
+<script>
+// 1. THEME — brand colours (teal + navy, from the Polish Pete logo)
+const THEME = {
+  bg:'#0c2329', dark:'#0f2c34', mid:'#15616d', brand:'#1f8ca3', bright:'#3db6cc',
+  dot:'#5fd3e6', chatBg:'#f2f9fa', tint:'#e2f2f5', tint2:'#edf8fa', line:'#daebee',
+  ink:'#13718a', inkSoft:'#1a829c', ring:'rgba(31,140,163,0.40)', cta:'#f59e0b', cta2:'#d97706',
+}
+
+// 2. CONFIG — company identity (Calendly link is fixed for every sample)
+const CONFIG = {
+  brand: {
+    name: 'The Polish Pete',
+    sub: 'Bathrooms · Kitchens · Renovations',
+    tagline: 'Slough & Berkshire · Instant quote system',
+    initial: 'PP',
+    logoSrc: 'polish-pete-logo.jpg',
+    fbHandle: '',
+    online: 'Online · Replies in seconds',
+  },
+  niche: 'bathroom renovation',
+  tooltip: 'See how it works ▶',
+  currency: { symbol: '£', locale: 'en-GB' },
+  sendToOwnerLabel: 'Send to owner →',
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
+  ctaTitle: 'This is just a sample.',
+  ctaText: 'Want this on your own site, capturing real leads like this around the clock?',
+  ctaButton: 'Book a 15-min call →',
+}
+
+// 3. MSGS — the conversation (plays itself, always the same single route)
+const MSGS = [
+  { r:'agent', t:"Hi! Would you like a quote for your bathroom renovation?" },
+  { r:'user',  t:"Yes please, we want to redo the whole thing" },
+  { r:'agent', t:"Lovely. Is it a full strip-out and refit, or just refreshing parts of it?" },
+  { r:'user',  t:"Full strip-out — it's really dated" },
+  { r:'agent', t:"Got it. Roughly how big is the bathroom? (rough dimensions are fine)" },
+  { r:'user',  t:"About 2.4m by 2.2m" },
+  { r:'agent', t:"Perfect. Would you like to keep the same layout, or move things around?" },
+  { r:'user',  t:"Move the toilet and swap the bath for a walk-in shower" },
+  { r:'agent', t:"Nice choice. Bath out, walk-in shower in — any preference on the tiling?" },
+  { r:'user',  t:"Large grey tiles, floor and walls" },
+  { r:'agent', t:"Good taste. Shall I include underfloor heating under those tiles?" },
+  { r:'user',  t:"Ooh yes, go on then" },
+  { r:'agent', t:"And new vanity unit and toilet to match, plus a heated towel rail?" },
+  { r:'user',  t:"Yes to all of that" },
+  { r:'agent', t:"Would you like new downlights and an extractor fan fitted while we're at it?" },
+  { r:'user',  t:"Yes, the current fan is useless" },
+  { r:'agent', t:"All noted. What's the postcode for the property?" },
+  { r:'user',  t:"SL4 1AA" },
+  { r:'agent', t:"Roughly what budget did you have in mind?" },
+  { r:'user',  t:"Around £8,000" },
+  { r:'agent', t:"And your name?" },
+  { r:'user',  t:"Emma Wright" },
+  { r:'agent', t:"Thanks Emma — best number to reach you on?" },
+  { r:'user',  t:"07700 900527" },
+  { r:'agent', t:"And your email?" },
+  { r:'user',  t:"emma.wright@gmail.com" },
+  { r:'agent', t:"Thanks Emma — putting your bathroom quote together now." },
+  { r:'estimate' }
+]
+
+// 4. EST — itemised quote + lead card (items must sum to EST.mid)
+const EST = {
+  lower: 7_900, mid: 8_400, upper: 9_200,
+  status: 'PRIORITY',
+  items: [
+    { label:'Strip out old bathroom & dispose',            amt:   480 },
+    { label:'Walk-in shower enclosure & tray — supply',    amt:   720 },
+    { label:'Vanity unit, toilet & basin — supply',        amt:   540 },
+    { label:'Brassware (taps, shower valve, towel rail)',  amt:   480 },
+    { label:'Wall & floor tiles — supply (≈22 m²)',        amt:   760 },
+    { label:'Tiling — labour',                             amt: 1_350 },
+    { label:'Plumbing — first & second fix',               amt: 1_180 },
+    { label:'Electrics (downlights, extractor, shaver)',   amt:   560 },
+    { label:'Plastering & making good',                    amt:   420 },
+    { label:'Electric underfloor heating mat',             amt:   380 },
+    { label:'Installation & fitting — labour',             amt: 1_100 },
+    { label:'Waste, fixings & sundries',                   amt:   430 },
+  ],
+  customer: {
+    'Name':'Emma Wright',
+    'Phone':'07700 900527',
+    'Email':'emma.wright@gmail.com',
+  },
+  timingShort: 'Within 4 weeks',
+  jobTags: ['Full bathroom refit', 'Bath → walk-in shower', 'Relocated WC', 'Underfloor heating', 'New tiling ≈22 m²'],
+  budget: { low: 7_500, high: 9_000 },
+  score: 93, scoreLabel: 'Premium Lead',
+  clientCity: 'Windsor', clientZip: 'SL4 1AA',
+  companyCity: 'Slough', distanceMi: 5,
+}
+</script>
+<script src="/quote-agent.js"></script>
+</body>
+</html>
