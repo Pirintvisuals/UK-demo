@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote Demo</title>
+  <!-- Client sample · Weatherald's Construction Services Ltd · Harrogate, North Yorkshire.
+       High-end contractor: barn conversions, new builds, extensions & bespoke joinery.
+       FMB + Guild of Master Craftsmen. Design-build / construction management.
+       Data-only file: the engine + styles live in /quote-agent.js + /quote-agent.css.
+       To make a new demo, copy template.html and edit the 4 blocks below. -->
+  <link rel="stylesheet" href="/quote-agent.css">
+</head>
+<body>
+<div class="page-center" id="hero"></div>
+<div id="widget-root"></div>
+
+<script>
+// 1. THEME — brand colours (midnight slate, sampled from the Weatherald's "W" monogram)
+const THEME = {
+  bg:'#0b0c11', dark:'#12151f', mid:'#1e2536', brand:'#33405c', bright:'#5c6f96',
+  dot:'#8ea4c9', chatBg:'#f6f7fa', tint:'#e9ecf3', tint2:'#f1f3f8', line:'#dfe3ec',
+  ink:'#2d3852', inkSoft:'#3b4966', ring:'rgba(51,64,92,0.40)', cta:'#f59e0b', cta2:'#d97706',
+}
+
+// 2. CONFIG — company identity (Calendly link is fixed for every sample)
+const CONFIG = {
+  brand: {
+    name: "Weatherald's Construction",
+    sub: 'Barn Conversions · New Builds · Extensions',
+    tagline: 'Harrogate, North Yorkshire · Instant quote system',
+    initial: 'W',
+    logoSrc: 'weatheralds-logo.jpg',
+    fbHandle: '',
+    online: 'Online · Replies in seconds',
+  },
+  niche: 'building project',
+  tooltip: 'See how it works ▶',
+  currency: { symbol: '£', locale: 'en-GB' },
+  sendToOwnerLabel: 'Send to owner →',
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
+  ctaTitle: 'This is just a sample.',
+  ctaText: 'Want this on your own site, capturing real leads like this around the clock?',
+  ctaButton: 'Book a 15-min call →',
+}
+
+// 3. MSGS — the conversation (plays itself, always the same single route)
+const MSGS = [
+  { r:'agent', t:"Hi! Would you like a quote for your building project?" },
+  { r:'user',  t:"Yes — we've bought a stone barn and want to convert it" },
+  { r:'agent', t:"Lovely, barn conversions are what we're known for. Whereabouts is it?" },
+  { r:'user',  t:"Just outside Pateley Bridge" },
+  { r:'agent', t:"Good part of the world. Do you have planning already, or would this be under Class Q permitted development?" },
+  { r:'user',  t:"We've got full planning approved" },
+  { r:'agent', t:"That makes life much easier. Is it listed, or in a conservation area?" },
+  { r:'user',  t:"Not listed, but it is in an AONB" },
+  { r:'agent', t:"Understood — that mainly drives the external materials and finishes. Roughly what floor area are we talking?" },
+  { r:'user',  t:"About 280 m² over two floors once it's laid out" },
+  { r:'agent', t:"A good size. How are the existing stone walls — sound, or is there movement and open jointing?" },
+  { r:'user',  t:"Some cracking at one gable, and the pointing is shot" },
+  { r:'agent', t:"We'd allow for structural repair and full repointing in lime — cement pointing traps damp in stone. Is there an existing floor slab?" },
+  { r:'user',  t:"Just earth and rubble really" },
+  { r:'agent', t:"Then it's new foundations and an insulated slab throughout, and likely some underpinning at that gable. What about the roof?" },
+  { r:'user',  t:"The slate's mostly there but the timbers look rough" },
+  { r:'agent', t:"We'd strip it, set out new timbers and re-lay with the reclaimed slate, topping up to match. That keeps the AONB officers happy. Is there a cart entrance you'd want glazed?" },
+  { r:'user',  t:"Yes — full-height glazing in the cart opening is the whole idea" },
+  { r:'agent', t:"That's the shot that sells these. We'd do a bespoke screen with Crittall-style windows elsewhere. Is the barn on mains gas?" },
+  { r:'user',  t:"No mains gas out there at all" },
+  { r:'agent', t:"Standard for rural barns — we'd price an air-source heat pump with underfloor heating throughout, which also suits the slab build-up. What about drainage?" },
+  { r:'user',  t:"No mains drainage either, and no septic tank" },
+  { r:'agent', t:"Then it's a package treatment plant and new runs. Insulating a stone barn is the tricky bit — do you want the stone left exposed internally?" },
+  { r:'user',  t:"Exposed stone on the gable wall, plastered elsewhere" },
+  { r:'agent', t:"Noted — insulated internally where it's plastered, lime plaster direct to stone where it's exposed. How many bedrooms and bathrooms?" },
+  { r:'user',  t:"Four bedrooms, three bathrooms" },
+  { r:'agent', t:"And would you like us to do the joinery? We run our own bespoke joinery shop — staircase, doors, fitted furniture." },
+  { r:'user',  t:"Definitely, that's partly why we called you" },
+  { r:'agent', t:"Grand. Kitchen supplied and fitted by us too, or coming from elsewhere?" },
+  { r:'user',  t:"By you — high-end, we want it right" },
+  { r:'agent', t:"Understood. Does the scope include the outside — driveway, terrace and landscaping?" },
+  { r:'user',  t:"Yes, the lot" },
+  { r:'agent', t:"Will you be living on site during the build?" },
+  { r:'user',  t:"No, we're staying in our current house until it's done" },
+  { r:'agent', t:"That speeds things up considerably. Is there access for a lorry and a telehandler?" },
+  { r:'user',  t:"There's a farm track, tight in places but it's been used by tractors" },
+  { r:'agent', t:"We'll survey it and allow for a temporary haul road if needed. What's the postcode?" },
+  { r:'user',  t:"HG3 5LZ" },
+  { r:'agent', t:"When would you ideally like to start?" },
+  { r:'user',  t:"Autumn, September if we can" },
+  { r:'agent', t:"And roughly what budget are you working to?" },
+  { r:'user',  t:"We've set aside £450,000 to £500,000" },
+  { r:'agent', t:"That's a realistic budget for this scope and finish. Can I take your name?" },
+  { r:'user',  t:"Charlotte Ellison" },
+  { r:'agent', t:"Thanks Charlotte — best number to reach you on?" },
+  { r:'user',  t:"07700 900318" },
+  { r:'agent', t:"And your email?" },
+  { r:'user',  t:"charlotte.ellison@gmail.com" },
+  { r:'agent', t:"Thank you Charlotte — putting your barn conversion estimate together now." },
+  { r:'estimate' }
+]
+
+// 4. EST — itemised quote + lead card (items must sum to EST.mid)
+const EST = {
+  lower: 445_000, mid: 475_956, upper: 515_000,
+  status: 'PRIORITY',
+  items: [
+    { label:"Architect's drawings, planning & building control", amt:  9_800 },
+    { label:'Structural engineer & existing-structure survey',   amt:  4_200 },
+    { label:'Site setup, scaffolding, welfare & waste',          amt: 12_500 },
+    { label:'Underpinning, foundations & insulated slab',        amt: 34_000 },
+    { label:'Stone wall repairs & full lime repointing',         amt: 22_000 },
+    { label:'Structural steels & oak frame',                     amt: 26_500 },
+    { label:'Roof — strip, new timbers, reclaimed slate',        amt: 41_000 },
+    { label:'Glazed cart entrance — bespoke screen',             amt: 38_000 },
+    { label:'Windows & external doors (Crittall-style)',         amt: 24_000 },
+    { label:'Insulation & airtightness to regs',                 amt: 16_500 },
+    { label:'Air-source heat pump + underfloor heating',         amt: 21_000 },
+    { label:'Private drainage — treatment plant & runs',         amt:  9_400 },
+    { label:'Electrics — first & second fix, lighting design',   amt: 18_000 },
+    { label:'Plumbing — first & second fix, 3 bathrooms',        amt: 14_500 },
+    { label:'Plastering & lime plaster to exposed stone',        amt: 13_800 },
+    { label:'Bespoke joinery — staircase, doors, fitted furniture', amt: 27_000 },
+    { label:'Kitchen — supply & fit, high-end',                  amt: 32_000 },
+    { label:'Bathrooms ×3 — supply & fit',                       amt: 19_500 },
+    { label:'Flooring — engineered oak & stone',                 amt: 12_600 },
+    { label:'Painting & decorating',                             amt:  8_900 },
+    { label:'External works — driveway, terrace & landscaping',  amt: 16_000 },
+    { label:'Project management (8%)',                           amt: 33_696 },
+    { label:'Contingency (5%)',                                  amt: 21_060 },
+  ],
+  customer: {
+    'Name':'Charlotte Ellison',
+    'Phone':'07700 900318',
+    'Email':'charlotte.ellison@gmail.com',
+  },
+  timingShort: 'Autumn · Sep start',
+  jobTags: ['Stone barn conversion', '~280 m² over two floors', 'Full planning approved', 'AONB — reclaimed slate roof', 'Glazed cart entrance', 'ASHP + underfloor heating', 'Treatment plant drainage', 'Bespoke joinery throughout'],
+  budget: { low: 450_000, high: 500_000 },
+  score: 97, scoreLabel: 'Premium Lead',
+  clientCity: 'Pateley Bridge', clientZip: 'HG3 5LZ',
+  companyCity: 'Harrogate', distanceMi: 12,
+}
+</script>
+<script src="/quote-agent.js"></script>
+</body>
+</html>
