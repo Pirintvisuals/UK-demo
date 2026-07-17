@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote Demo</title>
+  <!-- Client sample · Waltley Renovations Ltd · Walsall, West Midlands.
+       "Bathrooms & kitchens to full property renovations", fully insured.
+       Angle: their headline is FULL property renovation, so the demo is a buy-to-let
+       Victorian terrace taken back to letting standard — distinct from the extension
+       (/pmconstruction), loft (/elgarwood), barn (/weatheralds) and single-room
+       (/splash, /polishpete) demos already in the gallery. The lead is a landlord, so
+       the agent plays the void period and the legal EICR requirement.
+       Data-only file: the engine + styles live in /quote-agent.js + /quote-agent.css. -->
+  <link rel="stylesheet" href="/quote-agent.css">
+</head>
+<body>
+<div class="page-center" id="hero"></div>
+<div id="widget-root"></div>
+
+<script>
+// 1. THEME — brand colours (navy + antique gold, sampled from the Waltley badge).
+//    Their gold (#bfac74) is muted, so it'd make a weak CTA — amber stays per the template rule.
+const THEME = {
+  bg:'#0c2233', dark:'#10314a', mid:'#17456a', brand:'#1e4c6d', bright:'#4a86ad',
+  dot:'#7db4d6', chatBg:'#f5f8fa', tint:'#e5eef4', tint2:'#eff5f9', line:'#dbe7ef',
+  ink:'#1a4a6b', inkSoft:'#25617f', ring:'rgba(30,76,109,0.40)', cta:'#f59e0b', cta2:'#d97706',
+}
+
+// 2. CONFIG — company identity (Calendly link is fixed for every sample)
+const CONFIG = {
+  brand: {
+    name: 'Waltley Renovations',
+    sub: 'Property Renovation · Kitchens · Bathrooms',
+    tagline: 'Walsall & West Midlands · Instant quote system',
+    initial: 'WR',
+    logoSrc: 'waltley-logo.jpg',
+    fbHandle: '',
+    online: 'Online · Replies in seconds',
+  },
+  niche: 'renovation',
+  tooltip: 'See how it works ▶',
+  currency: { symbol: '£', locale: 'en-GB' },
+  sendToOwnerLabel: 'Send to owner →',
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
+  ctaTitle: 'This is just a sample.',
+  ctaText: 'Want this on your own site, capturing real leads like this around the clock?',
+  ctaButton: 'Book a 15-min call →',
+}
+
+// 3. MSGS — the conversation (plays itself, always the same single route)
+const MSGS = [
+  { r:'agent', t:"Hi! Would you like a quote for your renovation?" },
+  { r:'user',  t:"Yes — I've just bought a terrace that needs everything doing" },
+  { r:'agent', t:"Right up our street. Is it one for you to live in, or an investment?" },
+  { r:'user',  t:"Buy-to-let, I've got a few already" },
+  { r:'agent', t:"Understood — so every week it sits empty is costing you rent. What's the property?" },
+  { r:'user',  t:"Three-bed Victorian mid-terrace in Walsall" },
+  { r:'agent', t:"Classic stock round here. Has it been lived in recently, or has it stood empty?" },
+  { r:'user',  t:"Empty about a year — it was a probate sale" },
+  { r:'agent', t:"That usually means damp and dated services. Any damp showing?" },
+  { r:'user',  t:"Tide marks on the back wall, and it smells musty" },
+  { r:'agent', t:"Sounds like the damp course has failed. We'd inject a new DPC and tank that rear wall — there's no point plastering over it, it'll come straight back through." },
+  { r:'user',  t:"That's exactly what I was worried about" },
+  { r:'agent', t:"Better caught now than after the decorating. What's the wiring like — original, or rewired at some point?" },
+  { r:'user',  t:"Original I think, there's an old fuse box with rewireable fuses" },
+  { r:'agent', t:"That'll need a full rewire and a new consumer unit. As it stands it wouldn't pass an EICR, and you can't legally let it without one." },
+  { r:'user',  t:"I didn't know that was a requirement" },
+  { r:'agent', t:"It has been for a few years now — every rental needs a valid certificate. What's the heating?" },
+  { r:'user',  t:"An old back boiler behind the gas fire" },
+  { r:'agent', t:"That'll come out. We'd replumb and fit a combi — for a three-bed let it's the sensible choice, no cylinder taking up a cupboard." },
+  { r:'user',  t:"Agreed, keep it simple for tenants" },
+  { r:'agent', t:"How do the roof and chimney look from the outside?" },
+  { r:'user',  t:"A few slipped tiles, and the chimney looks rough" },
+  { r:'agent', t:"We'd re-bed the slipped tiles and repoint the stack. Are the windows still original timber?" },
+  { r:'user',  t:"Old timber, and most are rotten" },
+  { r:'agent', t:"We'd replace them in uPVC — no maintenance, which matters when it's let. Kitchen and bathroom both need doing?" },
+  { r:'user',  t:"Both, they look like they're from the 80s" },
+  { r:'agent', t:"We'd strip both out. Is there scope for a downstairs WC? Terraces let far better with one." },
+  { r:'user',  t:"There's a lean-to at the back we could use" },
+  { r:'agent', t:"That'd do it. It's worth the money — it lifts the rent and widens who'll take the place, families especially." },
+  { r:'user',  t:"Good shout, let's include it" },
+  { r:'agent', t:"Do you want it decorated and floored throughout, ready to hand straight to an agent?" },
+  { r:'user',  t:"Yes — turnkey, I don't want to be going back" },
+  { r:'agent', t:"Then we'd plaster throughout, new doors and skirting, LVT down, carpet up, all decorated neutral. What about the yard?" },
+  { r:'user',  t:"It's a jungle, full of rubbish" },
+  { r:'agent', t:"We'd clear it, fence it and pave it — low maintenance so it stays tidy between tenants. What's the postcode?" },
+  { r:'user',  t:"WS3 2HP" },
+  { r:'agent', t:"When could we start?" },
+  { r:'user',  t:"I've got the keys, so as soon as you like" },
+  { r:'agent', t:"We could be on site in about three weeks. Roughly what budget are you working to?" },
+  { r:'user',  t:"Between £50,000 and £60,000" },
+  { r:'agent', t:"That's realistic for a full renovation to letting standard. Can I take your name?" },
+  { r:'user',  t:"Owen Bradshaw" },
+  { r:'agent', t:"Thanks Owen — best number to reach you on?" },
+  { r:'user',  t:"07700 900426" },
+  { r:'agent', t:"And your email?" },
+  { r:'user',  t:"owen.bradshaw@gmail.com" },
+  { r:'agent', t:"Thanks Owen — putting your renovation quote together now." },
+  { r:'estimate' }
+]
+
+// 4. EST — itemised quote + lead card (items must sum to EST.mid)
+const EST = {
+  lower: 54_500, mid: 58_000, upper: 63_500,
+  status: 'PRIORITY',
+  items: [
+    { label:'Site setup, skips & waste removal',              amt: 1_850 },
+    { label:'Strip out — kitchen, bathroom, floors & plaster', amt: 2_400 },
+    { label:'Damp proofing — injected DPC + tanking',         amt: 2_650 },
+    { label:'Roof repairs & chimney repointing',              amt: 3_200 },
+    { label:'uPVC windows & external doors (8 openings)',     amt: 5_400 },
+    { label:'Full rewire + consumer unit (EICR certified)',   amt: 4_800 },
+    { label:'Full replumb + new combi boiler (Gas Safe)',     amt: 5_600 },
+    { label:'Central heating — 9 radiators & TRVs',           amt: 2_300 },
+    { label:'Kitchen — supply & fit',                         amt: 6_900 },
+    { label:'Bathroom — full refit, supply & fit',            amt: 4_200 },
+    { label:'Downstairs WC — new, supply & fit',              amt: 1_750 },
+    { label:'Plastering & skim throughout',                   amt: 4_900 },
+    { label:'Joinery — internal doors, skirting & architrave', amt: 2_150 },
+    { label:'Flooring — LVT downstairs, carpet upstairs',     amt: 3_100 },
+    { label:'Painting & decorating throughout',               amt: 3_400 },
+    { label:'Rear yard — clearance, fencing & paving',        amt: 2_200 },
+    { label:'Building control, Gas Safe & electrical certs',  amt:   680 },
+    { label:'Making good & sundries',                         amt:   520 },
+  ],
+  customer: {
+    'Name':'Owen Bradshaw',
+    'Phone':'07700 900426',
+    'Email':'owen.bradshaw@gmail.com',
+  },
+  timingShort: 'On site in 3 weeks',
+  jobTags: ['Full property renovation', '3-bed Victorian mid-terrace', 'Buy-to-let — turnkey', 'Rewire + replumb + combi', 'Damp proofing + roof repairs', 'Kitchen, bathroom + new WC'],
+  budget: { low: 50_000, high: 60_000 },
+  score: 95, scoreLabel: 'Premium Lead',
+  clientCity: 'Walsall', clientZip: 'WS3 2HP',
+  companyCity: 'Walsall', distanceMi: 2,
+}
+</script>
+<script src="/quote-agent.js"></script>
+</body>
+</html>
