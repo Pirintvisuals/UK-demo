@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote Demo</title>
+  <!-- Client sample · Elgarwood Construction Ltd · extensions, loft conversions,
+       renovations & garden buildings — Poole, Dorset. Est. 2020.
+       Data-only file: the engine + styles live in /quote-agent.js + /quote-agent.css.
+       To make a new demo, copy template.html and edit the 4 blocks below. -->
+  <link rel="stylesheet" href="/quote-agent.css">
+</head>
+<body>
+<div class="page-center" id="hero"></div>
+<div id="widget-root"></div>
+
+<script>
+// 1. THEME — brand colours (navy + gold, from the Elgarwood crown logo)
+const THEME = {
+  bg:'#0a1523', dark:'#0f2136', mid:'#1a3556', brand:'#274a76', bright:'#4a7bb0',
+  dot:'#7aa9d8', chatBg:'#f4f7fb', tint:'#e7eef7', tint2:'#eff5fb', line:'#dde7f2',
+  ink:'#1e4272', inkSoft:'#2a5289', ring:'rgba(39,74,118,0.40)', cta:'#d4af37', cta2:'#b8902f',
+}
+
+// 2. CONFIG — company identity (Calendly link is fixed for every sample)
+const CONFIG = {
+  brand: {
+    name: 'Elgarwood Construction',
+    sub: 'Extensions · Lofts · Renovations',
+    tagline: 'Poole, Dorset · Instant quote system',
+    initial: 'E',
+    logoSrc: 'elgarwood-logo.jpg',
+    fbHandle: '',
+    online: 'Online · Replies in seconds',
+  },
+  niche: 'building project',
+  tooltip: 'See how it works ▶',
+  currency: { symbol: '£', locale: 'en-GB' },
+  sendToOwnerLabel: 'Send to owner →',
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
+  ctaTitle: 'This is just a sample.',
+  ctaText: 'Want this on your own site, capturing real leads like this around the clock?',
+  ctaButton: 'Book a 15-min call →',
+}
+
+// 3. MSGS — the conversation (plays itself, always the same single route)
+const MSGS = [
+  { r:'agent', t:"Hi! Would you like a quote for your building project?" },
+  { r:'user',  t:"Yes please — we're thinking about converting the loft" },
+  { r:'agent', t:"Nice one, lofts are our bread and butter. What's the property — terrace, semi or detached?" },
+  { r:'user',  t:"1930s semi-detached" },
+  { r:'agent', t:"Perfect for a conversion. What would you like to use the space for?" },
+  { r:'user',  t:"A master bedroom with an en-suite" },
+  { r:'agent', t:"Lovely. Do you know the head height at the ridge — or is it roughly stand-up height in the middle?" },
+  { r:'user',  t:"I can stand up in the middle, about 2.4m I'd guess" },
+  { r:'agent', t:"That's plenty. To get the usable floor space you'd normally want a rear dormer — happy with that?" },
+  { r:'user',  t:"Yes, a dormer across the back" },
+  { r:'agent', t:"Good. Roof windows at the front too, to keep it bright?" },
+  { r:'user',  t:"Two Veluxes at the front would be great" },
+  { r:'agent', t:"Noted. Where would the new staircase come up — over the existing stairs, or off the landing?" },
+  { r:'user',  t:"Straight over the existing stairs" },
+  { r:'agent', t:"That's the tidiest option. Any preference on the stairs — softwood painted, or oak?" },
+  { r:'user',  t:"Oak please" },
+  { r:'agent', t:"As it's a semi, we'll serve the party wall notice on your neighbour — that's all handled by us. Have they been told?" },
+  { r:'user',  t:"Yes, they're fine with it" },
+  { r:'agent', t:"Great. Do you have drawings already, or would you like us to arrange the architect and structural calcs?" },
+  { r:'user',  t:"We've got drawings, but no calcs yet" },
+  { r:'agent', t:"No problem — we bring in the structural engineer and run building control for you. Loft conversions need a protected escape route, so the doors off the landing usually get upgraded to fire doors. That OK?" },
+  { r:'user',  t:"Yes, whatever it needs to pass" },
+  { r:'agent', t:"Will the existing boiler cope with two more rads and an en-suite shower, or should we price an upgrade?" },
+  { r:'user',  t:"It's fairly new, should be fine" },
+  { r:'agent', t:"We'll keep it then and just extend the system. Is there access down the side for scaffolding and a skip?" },
+  { r:'user',  t:"Yes, decent side access" },
+  { r:'agent', t:"That keeps it straightforward. What's the postcode?" },
+  { r:'user',  t:"BH14 8QT" },
+  { r:'agent', t:"Roughly what budget did you have in mind?" },
+  { r:'user',  t:"Around £50,000 to £60,000" },
+  { r:'agent', t:"And your name?" },
+  { r:'user',  t:"Rachel Whitfield" },
+  { r:'agent', t:"Thanks Rachel — best number to reach you on?" },
+  { r:'user',  t:"07700 900612" },
+  { r:'agent', t:"And your email?" },
+  { r:'user',  t:"rachel.whitfield@gmail.com" },
+  { r:'agent', t:"Thanks Rachel — putting your loft conversion quote together now." },
+  { r:'estimate' }
+]
+
+// 4. EST — itemised quote + lead card (items must sum to EST.mid)
+const EST = {
+  lower: 53_500, mid: 58_370, upper: 64_000,
+  status: 'PRIORITY',
+  items: [
+    { label:'Structural engineer calcs + building control', amt: 1_450 },
+    { label:'Party wall notice (neighbour, semi-detached)', amt:   900 },
+    { label:'Scaffolding, site setup & waste removal',      amt: 2_900 },
+    { label:'Steels & new loft floor structure',            amt: 5_400 },
+    { label:'Rear dormer — frame, roof & cladding',         amt: 9_800 },
+    { label:'2× Velux roof windows — supply & fit',         amt: 1_650 },
+    { label:'Oak staircase — bespoke, supply & fit',        amt: 4_200 },
+    { label:'Insulation & plasterboard to regs',            amt: 3_600 },
+    { label:'Plastering & skim throughout',                 amt: 2_700 },
+    { label:'Electrics — new circuits, lighting & sockets', amt: 2_850 },
+    { label:'Plumbing & heating — rads + en-suite runs',    amt: 3_100 },
+    { label:'En-suite fit-out (shower, WC, basin, tiling)', amt: 5_400 },
+    { label:'Fire safety — fire doors, alarms, escape route', amt: 2_350 },
+    { label:'Joinery — doors, skirting & eaves storage',    amt: 2_600 },
+    { label:'Flooring — bedroom & landing',                 amt: 1_300 },
+    { label:'Painting & decorating',                        amt: 1_900 },
+    { label:'Making good landing & stairwell',              amt: 1_450 },
+    { label:'Project management (6%)',                      amt: 3_213 },
+    { label:'Contingency (3%)',                             amt: 1_607 },
+  ],
+  customer: {
+    'Name':'Rachel Whitfield',
+    'Phone':'07700 900612',
+    'Email':'rachel.whitfield@gmail.com',
+  },
+  timingShort: 'Within 6–8 weeks',
+  jobTags: ['Rear dormer loft conversion', '1930s semi', 'Master bed + en-suite', 'Oak staircase', 'Party wall + steels', 'Fire regs escape route'],
+  budget: { low: 50_000, high: 60_000 },
+  score: 96, scoreLabel: 'Premium Lead',
+  clientCity: 'Poole', clientZip: 'BH14 8QT',
+  companyCity: 'Parkstone', distanceMi: 2,
+}
+</script>
+<script src="/quote-agent.js"></script>
+</body>
+</html>
