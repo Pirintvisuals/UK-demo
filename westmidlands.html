@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote Demo</title>
+  <!-- Client sample · West Midlands Home Improvements Ltd · West Bromwich (B70), covering
+       Birmingham, Dudley, Walsall, Wolverhampton & Coventry. Est. 2018. "We do it all!"
+       Design & build: architects IN-HOUSE, they submit the planning/building control
+       applications themselves, on-site project manager + back office, workmanship
+       guarantee, FCA-regulated finance available.
+       Angle: garage conversion + rear kitchen extension — the garage conversion is
+       unique in the gallery, and the design-&-build/"we handle the council"/finance
+       beats are things no other demo can claim. Kept clear of /pmconstruction's
+       single-storey rear extension (£99k) on both scope and price band.
+       NB finance is mentioned WITHOUT rates or APR — no financial advice.
+       Data-only file: the engine + styles live in /quote-agent.js + /quote-agent.css. -->
+  <link rel="stylesheet" href="/quote-agent.css">
+</head>
+<body>
+<div class="page-center" id="hero"></div>
+<div id="widget-root"></div>
+
+<script>
+// 1. THEME — brand colours (crimson + navy, sampled from the WMHI logo).
+//    Crimson leads (the "H" monogram); their navy #003375 becomes the page bg.
+const THEME = {
+  bg:'#0b1a2e', dark:'#5c0a1c', mid:'#8c1029', brand:'#cf0b33', bright:'#f2647f',
+  dot:'#ff8fa3', chatBg:'#fbf5f6', tint:'#fde8ec', tint2:'#fef3f5', line:'#f3dbe0',
+  ink:'#a80c29', inkSoft:'#c21232', ring:'rgba(207,11,51,0.40)', cta:'#f59e0b', cta2:'#d97706',
+}
+
+// 2. CONFIG — company identity (Calendly link is fixed for every sample)
+const CONFIG = {
+  brand: {
+    name: 'West Midlands Home Improvements',
+    sub: 'Extensions · Garage Conversions · Design & Build',
+    tagline: 'West Bromwich · We do it all! · Instant quote system',
+    initial: 'WM',
+    logoSrc: 'westmidlands-logo.jpg',
+    fbHandle: '',
+    online: 'Online · Replies in seconds',
+  },
+  niche: 'home improvements',
+  tooltip: 'See how it works ▶',
+  currency: { symbol: '£', locale: 'en-GB' },
+  sendToOwnerLabel: 'Send to owner →',
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
+  ctaTitle: 'This is just a sample.',
+  ctaText: 'Want this on your own site, capturing real leads like this around the clock?',
+  ctaButton: 'Book a 15-min call →',
+}
+
+// 3. MSGS — the conversation (plays itself, always the same single route)
+const MSGS = [
+  { r:'agent', t:"Hi! Would you like a quote for your home improvements?" },
+  { r:'user',  t:"Yes — we want to convert the garage and extend out the back" },
+  { r:'agent', t:"Both together is the sensible way — one lot of scaffolding, one lot of muck away. What's the property?" },
+  { r:'user',  t:"A 1960s semi in Great Barr" },
+  { r:'agent', t:"Good. Is the garage integral, or detached at the side?" },
+  { r:'user',  t:"Integral — and we've never once put a car in it" },
+  { r:'agent', t:"Nobody ever does. What would you like it to become?" },
+  { r:'user',  t:"A home office, I'm working from home four days a week" },
+  { r:'agent', t:"That'll change how the whole house works. Garage floors are usually a step down and uninsulated, so we'd raise and insulate it — warm underfoot, not a cold box." },
+  { r:'user',  t:"It's freezing in there at the moment" },
+  { r:'agent', t:"They always are. We'd take the door out, brick the opening up to match and put a window in. From the street you won't know it was a garage." },
+  { r:'user',  t:"That's exactly what we want — we don't want it looking converted" },
+  { r:'agent', t:"That's the mark of a good one. Now the back — what are you after?" },
+  { r:'user',  t:"Knock the kitchen and dining room together and extend out" },
+  { r:'agent', t:"Open-plan kitchen-diner then. Roughly how far out were you thinking?" },
+  { r:'user',  t:"About 3.5 metres across the back" },
+  { r:'agent', t:"That's usually within permitted development on a semi — but we'd check, and either way we submit the application for you. You won't be dealing with the council." },
+  { r:'user',  t:"That's a relief, I wouldn't know where to start" },
+  { r:'agent', t:"You don't need to. Planning and building control both go through us. Do you have drawings yet?" },
+  { r:'user',  t:"None at all. Do we need to find an architect first?" },
+  { r:'agent', t:"Not with us — our architects are in-house. It's one contract for the design and the build, so there's nobody to chase and nobody pointing fingers if something doesn't line up." },
+  { r:'user',  t:"Honestly that's the bit I was dreading" },
+  { r:'agent', t:"It's the bit that goes wrong most often. Taking out the wall between kitchen and dining room needs a steel and padstones — we'll have the calcs done as part of the design." },
+  { r:'user',  t:"Whatever it needs" },
+  { r:'agent', t:"For the roof — flat with rooflights, or pitched?" },
+  { r:'user',  t:"Flat with a couple of rooflights" },
+  { r:'agent', t:"Sensible. Once you extend, the middle of the room is always the dark bit — rooflights fix that. And across the back, bifolds or sliders?" },
+  { r:'user',  t:"Bifolds, about 3 metres" },
+  { r:'agent', t:"Noted. Is there a drain or manhole in the way out the back?" },
+  { r:'user',  t:"There's a manhole right outside the back door" },
+  { r:'agent', t:"Common on these. We'd move it or build over it to regs — routine work, but it's exactly the sort of thing that turns up as an extra on a cheaper quote." },
+  { r:'user',  t:"Good to know it's in the price" },
+  { r:'agent', t:"New kitchen supplied and fitted by us as well?" },
+  { r:'user',  t:"Yes please, the whole lot" },
+  { r:'agent', t:"Will you be living there while the work's going on?" },
+  { r:'user',  t:"Yes, we've nowhere else to go" },
+  { r:'agent', t:"We'll phase it to keep you a working kitchen as long as possible. You'll have a project manager on site and the office to ring — you won't be chasing a builder's mobile." },
+  { r:'user',  t:"That would make a big difference" },
+  { r:'agent', t:"What's the postcode?" },
+  { r:'user',  t:"B43 5TR" },
+  { r:'agent', t:"When would you like to start?" },
+  { r:'user',  t:"Within the next couple of months ideally" },
+  { r:'agent', t:"We could be on site in about six weeks. Roughly what budget are you working to?" },
+  { r:'user',  t:"£70,000 to £80,000" },
+  { r:'agent', t:"That's realistic for both jobs done properly. And if you'd rather spread the cost, we can arrange finance through an FCA-regulated provider — worth a chat once you've seen the figures." },
+  { r:'user',  t:"We might well look at that" },
+  { r:'agent', t:"Can I take your name?" },
+  { r:'user',  t:"Hannah Whitcombe" },
+  { r:'agent', t:"Thanks Hannah — best number to reach you on?" },
+  { r:'user',  t:"07700 900183" },
+  { r:'agent', t:"And your email?" },
+  { r:'user',  t:"hannah.whitcombe@gmail.com" },
+  { r:'agent', t:"Thanks Hannah — putting your quote together now." },
+  { r:'estimate' }
+]
+
+// 4. EST — itemised quote + lead card (items must sum to EST.mid)
+const EST = {
+  lower: 71_000, mid: 75_515, upper: 82_000,
+  status: 'PRIORITY',
+  items: [
+    { label:"Architect's drawings & design (in-house)",       amt: 1_850 },
+    { label:'Planning & building control applications',       amt: 1_150 },
+    { label:"Structural engineer's calcs",                    amt:   780 },
+    { label:'Site setup, scaffolding, welfare & skips',       amt: 2_400 },
+    { label:'Rear extension — foundations & groundworks',     amt: 6_200 },
+    { label:'Drainage — manhole build-over & alterations',    amt: 1_450 },
+    { label:'Rear extension — brick & blockwork (matched)',   amt: 8_900 },
+    { label:'Structural steels + padstones (knock-through)',  amt: 3_400 },
+    { label:'Warm flat roof + 2× rooflights',                 amt: 5_600 },
+    { label:'Aluminium bifold doors (3m) — supply & fit',     amt: 4_800 },
+    { label:'Garage conversion — infill wall, window & floor', amt: 3_900 },
+    { label:'Garage conversion — insulation, stud & boarding', amt: 2_300 },
+    { label:'Plumbing & heating — extend system, new rads',   amt: 2_700 },
+    { label:'Electrics — new circuits, lighting & sockets',   amt: 3_400 },
+    { label:'Plastering & skim throughout',                   amt: 3_800 },
+    { label:'Kitchen — supply & fit (open-plan kitchen-diner)', amt: 8_900 },
+    { label:'Flooring — LVT to kitchen-diner & office',       amt: 2_400 },
+    { label:'Joinery — doors, skirting & architrave',         amt: 1_650 },
+    { label:'Painting & decorating',                          amt: 2_200 },
+    { label:'Making good to existing house',                  amt: 1_500 },
+    { label:'On-site project management (6%)',                amt: 4_157 },
+    { label:'Contingency (3%)',                               amt: 2_078 },
+  ],
+  customer: {
+    'Name':'Hannah Whitcombe',
+    'Phone':'07700 900183',
+    'Email':'hannah.whitcombe@gmail.com',
+  },
+  timingShort: 'On site in 6 weeks',
+  jobTags: ['Garage conversion → home office', 'Single-storey rear extension', 'Open-plan kitchen-diner', 'Design & build — architects in-house', 'Planning handled for you', '3m aluminium bifolds', 'Living in during works'],
+  budget: { low: 70_000, high: 80_000 },
+  score: 96, scoreLabel: 'Premium Lead',
+  clientCity: 'Great Barr', clientZip: 'B43 5TR',
+  companyCity: 'West Bromwich', distanceMi: 4,
+}
+</script>
+<script src="/quote-agent.js"></script>
+</body>
+</html>
