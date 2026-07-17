@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote Demo</title>
+  <!-- Client sample · DRC Electrical & Air Conditioning Services · Basingstoke & Hampshire.
+       NICEIC Approved · REFCOM F-Gas · OLEV/OZEV approved (HCS & WCS) · BS7671:2018 · C&G 2391.
+       Angle: they do BOTH the air con and the electrical side in-house — no waiting on a
+       separate sparky — plus workplace EV chargers with the WCS grant (£500/socket from
+       1 Apr 2026, scheme runs to 31 Mar 2027; grant capped at 75% of cost).
+       Data-only file: the engine + styles live in /quote-agent.js + /quote-agent.css. -->
+  <link rel="stylesheet" href="/quote-agent.css">
+</head>
+<body>
+<div class="page-center" id="hero"></div>
+<div id="widget-root"></div>
+
+<script>
+// 1. THEME — brand colours (electric blue on black, sampled from the DRC roundel)
+const THEME = {
+  bg:'#000000', dark:'#08131f', mid:'#134a7a', brand:'#2e72b1', bright:'#4f9fdc',
+  dot:'#7dc4f0', chatBg:'#f4f8fc', tint:'#e4eff8', tint2:'#eef5fb', line:'#d9e6f2',
+  ink:'#1a5a91', inkSoft:'#256ba6', ring:'rgba(46,114,177,0.40)', cta:'#f59e0b', cta2:'#d97706',
+}
+
+// 2. CONFIG — company identity (Calendly link is fixed for every sample)
+const CONFIG = {
+  brand: {
+    name: 'DRC Electrical & Air Conditioning',
+    sub: 'Air Conditioning · Electrical · EV Chargers',
+    tagline: 'Basingstoke & Hampshire · Instant quote system',
+    initial: 'DRC',
+    logoSrc: 'drc.jpg',
+    fbHandle: '',
+    online: 'Online · Replies in seconds',
+  },
+  niche: 'air conditioning',
+  tooltip: 'See how it works ▶',
+  currency: { symbol: '£', locale: 'en-GB' },
+  sendToOwnerLabel: 'Send to owner →',
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
+  ctaTitle: 'This is just a sample.',
+  ctaText: 'Want this on your own site, capturing real leads like this around the clock?',
+  ctaButton: 'Book a 15-min call →',
+}
+
+// 3. MSGS — the conversation (plays itself, always the same single route)
+const MSGS = [
+  { r:'agent', t:"Hi! Would you like a quote for your air conditioning?" },
+  { r:'user',  t:"Yes — we need cooling for our office in Basingstoke" },
+  { r:'agent', t:"Happy to help. Is it a single room, or the whole floor?" },
+  { r:'user',  t:"Open-plan office plus a meeting room and a small comms room" },
+  { r:'agent', t:"Noted. Roughly how big is the open-plan area, and how many people in it?" },
+  { r:'user',  t:"About 90 m², around 18 desks" },
+  { r:'agent', t:"That'll need a fair bit of capacity — 18 bodies and their kit throw out a lot of heat. Suspended ceiling in there?" },
+  { r:'user',  t:"Yes, standard ceiling tiles" },
+  { r:'agent', t:"Then ceiling cassettes are the tidy option — they sit flush in the grid and spread air four ways. Three would cover 90 m² comfortably." },
+  { r:'user',  t:"That sounds right. The meeting room's much smaller" },
+  { r:'agent', t:"A single wall unit will do that. Now the comms room — is that kit running around the clock?" },
+  { r:'user',  t:"Yes, the server rack's on 24/7 and it gets really hot in there" },
+  { r:'agent', t:"That one needs its own dedicated unit — 24/7 rated with auto-restart, so it comes back on by itself after a power cut. You don't want that failing over a weekend." },
+  { r:'user',  t:"Definitely not, that's our main worry" },
+  { r:'agent', t:"Would you like heating from them as well? They're heat pumps, so it's the same units running in reverse." },
+  { r:'user',  t:"Yes, that'd save us running the old heaters" },
+  { r:'agent', t:"Good call, it's far cheaper to run. Do you know if there's spare capacity in the board for the new circuits?" },
+  { r:'user',  t:"No idea honestly — do we need to get an electrician in first?" },
+  { r:'agent', t:"No need, we're NICEIC approved and do all the electrical work ourselves. Most air con firms have to bring a sparky in, which is where the delays come from." },
+  { r:'user',  t:"Oh brilliant, that makes it much easier" },
+  { r:'agent', t:"We'll fit a small sub-board with dedicated circuits and certify it. As it's a commercial let, would you like an EICR while we're on site?" },
+  { r:'user',  t:"Yes, ours is out of date anyway" },
+  { r:'agent', t:"We'll include it. One other thing — do you have parking, and any electric cars among the staff?" },
+  { r:'user',  t:"Two of the directors have EVs, they charge at home currently" },
+  { r:'agent', t:"Worth knowing we're OZEV approved — the Workplace Charging Scheme pays £500 per socket, so two chargers means £1,000 off. Since we're already doing the electrics it's much cheaper to do it now than as a separate job." },
+  { r:'user',  t:"That's a good point, let's include two chargers" },
+  { r:'agent', t:"I'll put them on the quote with the grant deducted. Where's the outdoor unit going — flat roof, or ground level?" },
+  { r:'user',  t:"There's a flat roof above the offices" },
+  { r:'agent', t:"That's ideal, keeps the noise away from desks. All our installs are F-Gas certified and commissioned. What's the postcode?" },
+  { r:'user',  t:"RG24 8PH" },
+  { r:'agent', t:"When would you want the work done? We can do evenings or a weekend to keep you working." },
+  { r:'user',  t:"A weekend would be perfect, we can't lose desk time" },
+  { r:'agent', t:"Noted, we'll price it that way. Roughly what budget did you have in mind?" },
+  { r:'user',  t:"Somewhere between £22,000 and £28,000" },
+  { r:'agent', t:"And your name?" },
+  { r:'user',  t:"Nathan Brooks" },
+  { r:'agent', t:"Thanks Nathan — best number to reach you on?" },
+  { r:'user',  t:"07700 900265" },
+  { r:'agent', t:"And your email?" },
+  { r:'user',  t:"nathan.brooks@gmail.com" },
+  { r:'agent', t:"Thanks Nathan — putting your air con and electrical quote together now." },
+  { r:'estimate' }
+]
+
+// 4. EST — itemised quote + lead card (items must sum to EST.mid; the grant is a negative line)
+const EST = {
+  lower: 22_500, mid: 24_280, upper: 27_500,
+  status: 'PRIORITY',
+  items: [
+    { label:'Site survey, heat-load calc & F-Gas design',      amt:   480 },
+    { label:'3× ceiling cassettes (open-plan) — supply',       amt: 4_350 },
+    { label:'Wall unit (meeting room) — supply',               amt:   620 },
+    { label:'Comms room split — 24/7 rated, auto-restart',     amt: 1_180 },
+    { label:'2× outdoor condenser units (multi-split)',        amt: 3_200 },
+    { label:'Refrigerant pipework & cabling runs',             amt: 2_450 },
+    { label:'Ceiling grid alterations & builders work',        amt:   890 },
+    { label:'Condensate drainage & pumps',                     amt:   640 },
+    { label:'Electrical — new sub-board & dedicated circuits', amt: 2_380 },
+    { label:'Isolators, containment & final connections',      amt:   970 },
+    { label:'Installation — labour (2 engineers, weekend)',    amt: 3_840 },
+    { label:'F-Gas commissioning, certification & handover',   amt:   460 },
+    { label:'Wi-Fi controllers & scheduling setup',            amt:   380 },
+    { label:'EICR + electrical certification',                 amt:   420 },
+    { label:'2× 7.4kW workplace EV chargers — supply & fit',   amt: 2_760 },
+    { label:'Workplace Charging Scheme grant (2 × £500)',      amt: -1_000 },
+    { label:'Making good & sundries',                          amt:   260 },
+  ],
+  customer: {
+    'Name':'Nathan Brooks',
+    'Phone':'07700 900265',
+    'Email':'nathan.brooks@gmail.com',
+  },
+  timingShort: 'Within 3–4 weeks',
+  jobTags: ['Office air con — 5 indoor units', '90 m² open-plan, 18 desks', 'Comms room 24/7 cooling', 'NICEIC electrical + EICR', '2× workplace EV chargers', 'WCS grant applied', 'F-Gas certified', 'Weekend install'],
+  budget: { low: 22_000, high: 28_000 },
+  score: 95, scoreLabel: 'Premium Lead',
+  clientCity: 'Basingstoke', clientZip: 'RG24 8PH',
+  companyCity: 'Basingstoke', distanceMi: 3,
+}
+</script>
+<script src="/quote-agent.js"></script>
+</body>
+</html>
