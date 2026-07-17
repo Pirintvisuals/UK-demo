@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote Demo</title>
+  <!-- Client sample · Octopus Tiles & Bathrooms (Octopus Bathrooms Ltd) · Green Lane,
+       Birchills, Walsall. 10+ yrs, small family-run team.
+       Showroom is INSIDE Tile Choice — 9 full bathrooms + 15 displays, open 6 days.
+       Every trade in-house (plumber, tiler, plasterer, electrician) → full bathroom in
+       7–10 working days. Bathrooms from £1,500.
+       Angle: /splash and /polishpete already cover a single ~£8k bathroom refit, so this
+       is TWO rooms at once — which lets the agent play the in-house/10-day USP and the
+       one-working-loo sequencing, and close on a showroom visit. Tiles lead the spec
+       because tiles lead their name.
+       Data-only file: the engine + styles live in /quote-agent.js + /quote-agent.css. -->
+  <link rel="stylesheet" href="/quote-agent.css">
+</head>
+<body>
+<div class="page-center" id="hero"></div>
+<div id="widget-root"></div>
+
+<script>
+// 1. THEME — brand colours (cyan on near-black, sampled from the octopus mark).
+//    bright is the exact logo cyan #4abae0; brand is a touch deeper so white text on
+//    buttons and user bubbles stays readable.
+const THEME = {
+  bg:'#1b191a', dark:'#0e2a35', mid:'#1a6b85', brand:'#2e9fc6', bright:'#4abae0',
+  dot:'#7fd4ef', chatBg:'#f4fafc', tint:'#e2f3f9', tint2:'#eef8fb', line:'#d7ebf2',
+  ink:'#1a7ea3', inkSoft:'#2492b8', ring:'rgba(46,159,198,0.40)', cta:'#f59e0b', cta2:'#d97706',
+}
+
+// 2. CONFIG — company identity (Calendly link is fixed for every sample)
+const CONFIG = {
+  brand: {
+    name: 'Octopus Tiles & Bathrooms',
+    sub: 'Bathrooms · Tiles · Design & Fit',
+    tagline: 'Walsall · 10 yrs · Instant quote system',
+    initial: 'O',
+    logoSrc: 'octopus-logo.jpg',
+    fbHandle: '',
+    online: 'Online · Replies in seconds',
+  },
+  niche: 'bathroom',
+  tooltip: 'See how it works ▶',
+  currency: { symbol: '£', locale: 'en-GB' },
+  sendToOwnerLabel: 'Send to owner →',
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
+  ctaTitle: 'This is just a sample.',
+  ctaText: 'Want this on your own site, capturing real leads like this around the clock?',
+  ctaButton: 'Book a 15-min call →',
+}
+
+// 3. MSGS — the conversation (plays itself, always the same single route)
+const MSGS = [
+  { r:'agent', t:"Hi! Would you like a quote for your bathroom?" },
+  { r:'user',  t:"Yes — actually we've got two that need doing" },
+  { r:'agent', t:"Even better. Which two?" },
+  { r:'user',  t:"The family bathroom and the en-suite, both original" },
+  { r:'agent', t:"What's the house?" },
+  { r:'user',  t:"A 1930s semi in Aldridge" },
+  { r:'agent', t:"Lovely stock round there. What's wrong with them as they stand?" },
+  { r:'user',  t:"Avocado suite in the family one — and the en-suite leaks" },
+  { r:'agent', t:"Avocado! We still pull a few of those out every year. Where's the en-suite leaking from?" },
+  { r:'user',  t:"Around the shower tray, the floor's gone soft" },
+  { r:'agent', t:"That's water getting past the tray and into the boards. Rather than patch it, we'd tank the room properly and put a wetroom in — level access, no tray to fail." },
+  { r:'user',  t:"I've always liked the look of a wetroom" },
+  { r:'agent', t:"They look smart, and there's no lip to step over — which matters more than you'd think in twenty years' time. Tanked properly it can't go into the floor again." },
+  { r:'user',  t:"That's the main thing, we don't want it happening twice" },
+  { r:'agent', t:"Understood. What about the family bathroom — bath, shower, or both?" },
+  { r:'user',  t:"Keep a bath, we've got young kids" },
+  { r:'agent', t:"Sensible, you'll want one for a good few years yet. Bath with a shower over, or room for both?" },
+  { r:'user',  t:"Bath with a shower over — it's not a big room" },
+  { r:'agent', t:"Right call. Now tiles — that's our first trade. Our showroom's inside Tile Choice, so there's plenty to look at." },
+  { r:'user',  t:"How much of it would you tile?" },
+  { r:'agent', t:"Full height in both, is our advice. Half-height dates quickly and the top half still gets damp. Large-format porcelain means fewer grout lines — less to scrub, and it looks calmer in a small room." },
+  { r:'user',  t:"Full height it is then" },
+  { r:'agent', t:"Underfloor heating while the floor's up? It's the cheapest it will ever be to do — the floor's coming out anyway." },
+  { r:'user',  t:"Yes, in both please" },
+  { r:'agent', t:"Noted. Now the practical bit — is there another loo downstairs?" },
+  { r:'user',  t:"No, just those two" },
+  { r:'agent', t:"Then we wouldn't do them both at once. We'd finish the en-suite first and hand it back working, then start the family bathroom. You're never without." },
+  { r:'user',  t:"That honestly hadn't occurred to me" },
+  { r:'agent', t:"It's the first thing we work out. Plenty of people get both stripped out on day one and spend a fortnight washing at their mum's." },
+  { r:'user',  t:"That would not go down well in this house" },
+  { r:'agent', t:"Quite. Everyone's in-house with us as well — plumber, tiler, electrician, plasterer, all our own lads. Nobody's sat waiting on a subbie who's stuck on another job." },
+  { r:'user',  t:"So how long would the two take?" },
+  { r:'agent', t:"Around ten working days for the pair. That's the bit not chasing trades buys you." },
+  { r:'user',  t:"That's a lot quicker than I expected" },
+  { r:'agent', t:"It's why we keep it all under one roof. Are the extractors any good at the moment?" },
+  { r:'user',  t:"Noisy and useless" },
+  { r:'agent', t:"We'd fit humidity-sensing ones — they run themselves and they'll save your new grout. What's the postcode?" },
+  { r:'user',  t:"WS9 8QT" },
+  { r:'agent', t:"Roughly what budget did you have in mind for the two?" },
+  { r:'user',  t:"Around £18,000 to £22,000" },
+  { r:'agent', t:"That's realistic for two rooms at this spec. You'd be very welcome to come and see it first — there are nine full bathrooms on display at Green Lane, six days a week." },
+  { r:'user',  t:"We'd like that, it's hard to picture from a website" },
+  { r:'agent', t:"Always easier stood in one. Can I take your name?" },
+  { r:'user',  t:"Leanne Corbett" },
+  { r:'agent', t:"Thanks Leanne — best number to reach you on?" },
+  { r:'user',  t:"07700 900392" },
+  { r:'agent', t:"And your email?" },
+  { r:'user',  t:"leanne.corbett@gmail.com" },
+  { r:'agent', t:"Thanks Leanne — putting the quote for both bathrooms together now." },
+  { r:'estimate' }
+]
+
+// 4. EST — itemised quote + lead card (items must sum to EST.mid)
+const EST = {
+  lower: 18_400, mid: 19_620, upper: 21_500,
+  status: 'PRIORITY',
+  items: [
+    { label:'Design consultation & 3D bathroom plan',         amt:   240 },
+    { label:'Strip out both rooms & waste removal',           amt:   680 },
+    { label:'Family bathroom suite — bath, WC, vanity',       amt: 1_850 },
+    { label:'Family bathroom brassware & thermostatic shower', amt:   720 },
+    { label:'En-suite wetroom former + tanking system',       amt:   980 },
+    { label:'En-suite suite — shower, WC, basin, brassware',  amt: 1_420 },
+    { label:'Shower screens & enclosure',                     amt:   780 },
+    { label:'Large-format porcelain wall tiles — supply',     amt: 1_680 },
+    { label:'Floor tiles — supply (both rooms)',              amt:   620 },
+    { label:'Electric underfloor heating — both rooms',       amt:   940 },
+    { label:'Heated towel rails ×2',                          amt:   460 },
+    { label:'Humidity-sensing extractor fans ×2',             amt:   340 },
+    { label:'Plumbing — first & second fix, both rooms',      amt: 2_150 },
+    { label:'Electrics — first & second fix, certified',      amt: 1_180 },
+    { label:'Tiling — labour, full height both rooms',        amt: 2_400 },
+    { label:'Plastering & making good',                       amt:   890 },
+    { label:'Fitting — suites, screens & brassware',          amt: 1_680 },
+    { label:'Silicone, trims & finishing',                    amt:   320 },
+    { label:'Protection, waste & sundries',                   amt:   290 },
+  ],
+  customer: {
+    'Name':'Leanne Corbett',
+    'Phone':'07700 900392',
+    'Email':'leanne.corbett@gmail.com',
+  },
+  timingShort: '10 working days',
+  jobTags: ['Family bathroom + en-suite', 'En-suite → walk-in wetroom', 'Large-format porcelain, full height', 'Underfloor heating both rooms', 'All trades in-house', 'Sequenced — always one loo working'],
+  budget: { low: 18_000, high: 22_000 },
+  score: 95, scoreLabel: 'Premium Lead',
+  clientCity: 'Aldridge', clientZip: 'WS9 8QT',
+  companyCity: 'Walsall', distanceMi: 4,
+}
+</script>
+<script src="/quote-agent.js"></script>
+</body>
+</html>
