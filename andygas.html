@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote Demo</title>
+  <!-- Client sample · Andy Gas Southern Ltd (AGS) · Hilsea, Portsmouth & Hampshire. Est. 2004.
+       Gas Safe registered · Worcester Accredited · Which? Trusted Trader.
+       Boilers, central heating, unvented cylinders, powerflushing, gas safety.
+       Angle: Worcester Accredited = the 10-year guarantee only accredited installers
+       can give, plus their unvented-cylinder specialism — so the demo is a full
+       system conversion, not the combi swap already covered by /gt.
+       Data-only file: the engine + styles live in /quote-agent.js + /quote-agent.css. -->
+  <link rel="stylesheet" href="/quote-agent.css">
+</head>
+<body>
+<div class="page-center" id="hero"></div>
+<div id="widget-root"></div>
+
+<script>
+// 1. THEME — brand colours (blue + orange, sampled from the AGS roundel;
+//    the CTA is their own logo orange rather than the generic amber)
+const THEME = {
+  bg:'#04182b', dark:'#06263f', mid:'#0a4275', brand:'#0156a6', bright:'#2e86d6',
+  dot:'#6cb8ee', chatBg:'#f4f8fc', tint:'#e3eff9', tint2:'#eef5fc', line:'#d8e6f3',
+  ink:'#0a4f8f', inkSoft:'#1463ab', ring:'rgba(1,86,166,0.40)', cta:'#f48f1b', cta2:'#d4750e',
+}
+
+// 2. CONFIG — company identity (Calendly link is fixed for every sample)
+const CONFIG = {
+  brand: {
+    name: 'Andy Gas Southern',
+    sub: 'Boilers · Central Heating · Gas Safe',
+    tagline: 'Portsmouth · 22 yrs · Instant quote system',
+    initial: 'AGS',
+    logoSrc: 'andygas-logo.jpg',
+    fbHandle: '',
+    online: 'Online · Replies in seconds',
+  },
+  niche: 'heating',
+  tooltip: 'See how it works ▶',
+  currency: { symbol: '£', locale: 'en-GB' },
+  sendToOwnerLabel: 'Send to owner →',
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
+  ctaTitle: 'This is just a sample.',
+  ctaText: 'Want this on your own site, capturing real leads like this around the clock?',
+  ctaButton: 'Book a 15-min call →',
+}
+
+// 3. MSGS — the conversation (plays itself, always the same single route)
+const MSGS = [
+  { r:'agent', t:"Hi! Would you like a quote for your heating?" },
+  { r:'user',  t:"Yes please — our boiler's on its last legs" },
+  { r:'agent', t:"Let's sort that. What have you got at the moment — a combi, or a boiler with a hot water cylinder?" },
+  { r:'user',  t:"There's a cylinder in the airing cupboard and two tanks in the loft" },
+  { r:'agent', t:"That's an old-style open-vented system. Roughly how old is the boiler, and do you know the make?" },
+  { r:'user',  t:"It's a Potterton, must be 20 years old at least" },
+  { r:'agent', t:"Fair innings. At that age it'll be G-rated, so you're losing a lot of heat up the flue. Is it breaking down, or just tired?" },
+  { r:'user',  t:"It's been serviced but the pressure keeps dropping and the rads take forever" },
+  { r:'agent', t:"Slow rads usually means sludge in the system. How many bedrooms and bathrooms have you got?" },
+  { r:'user',  t:"Four bedrooms, two bathrooms — an en-suite and the family one" },
+  { r:'agent', t:"That's the key detail. A lot of firms would sell you a combi, but with two bathrooms you'd get a pressure drop the moment both showers run." },
+  { r:'user',  t:"That's exactly what happens at my mum's, it's useless" },
+  { r:'agent', t:"Quite. For your place I'd go system boiler plus an unvented cylinder — mains-pressure hot water to both bathrooms at once, and the loft tanks come out entirely." },
+  { r:'user',  t:"Getting the loft back would be a bonus" },
+  { r:'agent', t:"You'd gain the whole space. Unvented cylinders need a G3 ticket to install and certify — all our engineers hold it, it's a big part of what we do." },
+  { r:'user',  t:"Good to know. What boiler would you put in?" },
+  { r:'agent', t:"We're Worcester Accredited, so we can register a 10-year guarantee that non-accredited installers simply can't offer. Same boiler, longer cover." },
+  { r:'user',  t:"Ten years would put my mind at rest" },
+  { r:'agent', t:"That's the idea. Given the sludge, we'd powerflush the system before the new boiler goes on — fit a new boiler to a dirty system and you'll void the guarantee." },
+  { r:'user',  t:"Makes sense, we'd rather it was done properly" },
+  { r:'agent', t:"How many radiators are there altogether?" },
+  { r:'user',  t:"Twelve I think, spread over both floors" },
+  { r:'agent', t:"Twelve noted. We'd add a magnetic filter to catch anything that comes loose afterwards, and fresh TRVs so you can turn down the rooms you're not using." },
+  { r:'user',  t:"Yes to both" },
+  { r:'agent', t:"Would you like a smart thermostat, and separate zones for upstairs and downstairs?" },
+  { r:'user',  t:"Zones sound good — upstairs is always roasting" },
+  { r:'agent', t:"We'll set it up as a two-zone system so you can heat them independently. Where does the boiler live, and is it staying put?" },
+  { r:'user',  t:"Kitchen, and we'd like it to stay there" },
+  { r:'agent', t:"Easiest option. It'll need a bigger gas supply for the new one, but that's routine. What's the postcode?" },
+  { r:'user',  t:"PO4 9RT" },
+  { r:'agent', t:"How soon would you want it done?" },
+  { r:'user',  t:"Soon as possible really, before winter" },
+  { r:'agent', t:"We'd get you booked in within a fortnight. Roughly what budget did you have in mind?" },
+  { r:'user',  t:"We were thinking £8,000 to £10,000" },
+  { r:'agent', t:"That's realistic for a full conversion like this. And your name?" },
+  { r:'user',  t:"Gemma Aldridge" },
+  { r:'agent', t:"Thanks Gemma — best number to reach you on?" },
+  { r:'user',  t:"07700 900537" },
+  { r:'agent', t:"And your email?" },
+  { r:'user',  t:"gemma.aldridge@gmail.com" },
+  { r:'agent', t:"Thanks Gemma — putting your heating quote together now." },
+  { r:'estimate' }
+]
+
+// 4. EST — itemised quote + lead card (items must sum to EST.mid)
+const EST = {
+  lower: 8_700, mid: 9_350, upper: 10_400,
+  status: 'PRIORITY',
+  items: [
+    { label:'Worcester system boiler (30kW) — supply',        amt: 1_980 },
+    { label:'Unvented cylinder (210L stainless) — supply',    amt: 1_150 },
+    { label:'Strip out old boiler, loft tanks & cylinder',    amt:   480 },
+    { label:'System conversion — primary pipework & valves',  amt:   890 },
+    { label:'Cylinder install & G3 works (tundish, discharge)', amt:  620 },
+    { label:'Powerflush — full system (12 radiators)',        amt:   640 },
+    { label:'Magnetic system filter + inhibitor',             amt:   190 },
+    { label:'Smart thermostat + 2-zone controls (S-plan)',    amt:   420 },
+    { label:'12× TRVs — supply & fit',                        amt:   360 },
+    { label:'Flue, condensate & gas supply upgrade',          amt:   540 },
+    { label:'Installation — labour (2 engineers, 3 days)',    amt: 1_680 },
+    { label:'Gas Safe commissioning, Building Regs & certs',  amt:   240 },
+    { label:'Making good & sundries',                         amt:   160 },
+  ],
+  customer: {
+    'Name':'Gemma Aldridge',
+    'Phone':'07700 900537',
+    'Email':'gemma.aldridge@gmail.com',
+  },
+  timingShort: 'Within 2 weeks',
+  jobTags: ['Open-vented → system conversion', 'Unvented cylinder (G3)', '4-bed / 2-bath, 12 rads', 'Worcester Accredited — 10yr guarantee', 'Full powerflush', 'Smart 2-zone controls'],
+  budget: { low: 8_000, high: 10_000 },
+  score: 94, scoreLabel: 'Premium Lead',
+  clientCity: 'Southsea', clientZip: 'PO4 9RT',
+  companyCity: 'Hilsea', distanceMi: 4,
+}
+</script>
+<script src="/quote-agent.js"></script>
+</body>
+</html>
