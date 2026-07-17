@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Instant Quote Demo</title>
+  <!-- Client sample · Sussex Air Conditioning & Heat Pumps Ltd · Peacehaven, covering
+       Brighton and East/West Sussex. 20+ yrs. Domestic + commercial.
+       Angle: they do AC *and* refrigeration *and* heat recovery / ventilation — so the
+       demo is a Brighton restaurant fit-out that needs all three, rather than another
+       split-system install (the gallery already has six of those).
+       Data-only file: the engine + styles live in /quote-agent.js + /quote-agent.css. -->
+  <link rel="stylesheet" href="/quote-agent.css">
+</head>
+<body>
+<div class="page-center" id="hero"></div>
+<div id="widget-root"></div>
+
+<script>
+// 1. THEME — brand colours (charcoal + orange, sampled from the SUSSEXAIRCON. wordmark;
+//    bg is the logo's own #222222 so the tile blends into the page)
+const THEME = {
+  bg:'#222222', dark:'#1a1a1a', mid:'#8f3a17', brand:'#f1692d', bright:'#ff8f5e',
+  dot:'#ffb391', chatBg:'#faf7f5', tint:'#fdeee7', tint2:'#fef5f0', line:'#f3e0d6',
+  ink:'#c2521f', inkSoft:'#d75f27', ring:'rgba(241,105,45,0.40)', cta:'#f59e0b', cta2:'#d97706',
+}
+
+// 2. CONFIG — company identity (Calendly link is fixed for every sample)
+const CONFIG = {
+  brand: {
+    name: 'Sussex Air Conditioning',
+    sub: 'Air Con · Heat Pumps · Refrigeration',
+    tagline: 'Peacehaven & Brighton · 20 yrs · Instant quote system',
+    initial: 'SA',
+    logoSrc: 'sussexaircon-logo.jpg',
+    fbHandle: '',
+    online: 'Online · Replies in seconds',
+  },
+  niche: 'air conditioning',
+  tooltip: 'See how it works ▶',
+  currency: { symbol: '£', locale: 'en-GB' },
+  sendToOwnerLabel: 'Send to owner →',
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
+  ctaTitle: 'This is just a sample.',
+  ctaText: 'Want this on your own site, capturing real leads like this around the clock?',
+  ctaButton: 'Book a 15-min call →',
+}
+
+// 3. MSGS — the conversation (plays itself, always the same single route)
+const MSGS = [
+  { r:'agent', t:"Hi! Would you like a quote for your air conditioning?" },
+  { r:'user',  t:"Yes — we're fitting out a restaurant in Brighton" },
+  { r:'agent', t:"Nice one. Is it a new site, or are you taking over somewhere already fitted?" },
+  { r:'user',  t:"An old shop unit, it's a bare shell" },
+  { r:'agent', t:"So we're starting from scratch. How many covers are you planning?" },
+  { r:'user',  t:"About 60 in the dining room, plus a small bar" },
+  { r:'agent', t:"Noted. Suspended ceiling in the dining area, or exposed?" },
+  { r:'user',  t:"Exposed — we're going for the industrial look" },
+  { r:'agent', t:"Then we'd set cassettes into a bulkhead so the pipework stays hidden. With 60 covers you need real capacity — bodies and kitchen heat add up fast." },
+  { r:'user',  t:"Cassettes sound good, we want it to look tidy" },
+  { r:'agent', t:"Three across the dining room and one for the bar should do it. Now the kitchen — is there an extract canopy in there?" },
+  { r:'user',  t:"No, nothing at all" },
+  { r:'agent', t:"That's the big one. A commercial kitchen needs an extract canopy and fire-rated ductwork, and you need make-up air coming back in — otherwise the extract just pulls your heating straight out of the building." },
+  { r:'user',  t:"We hadn't even thought about that" },
+  { r:'agent', t:"Most people haven't. We'd put a heat recovery unit on it — it takes the warmth out of the air being extracted and puts it back into the fresh air coming in. Heat recovery is one of our specialisms." },
+  { r:'user',  t:"So it cuts the heating bill?" },
+  { r:'agent', t:"Considerably, and it keeps the kitchen workable in August. Will you need cold storage as well?" },
+  { r:'user',  t:"Yes, a walk-in cold room" },
+  { r:'agent', t:"We do refrigeration in-house too, so that's the same team and one point of contact. What footprint have you got for it?" },
+  { r:'user',  t:"There's a back store about 2.5m by 2m" },
+  { r:'agent', t:"That'll take a decent walk-in. Where can the outdoor units go — flat roof, or a yard?" },
+  { r:'user',  t:"Flat roof above the kitchen" },
+  { r:'agent', t:"Good. Are there flats above or behind you?" },
+  { r:'user',  t:"Yes, flats behind — is that a problem?" },
+  { r:'agent', t:"It's worth getting right. Environmental health will hold you to a noise limit, and condensers plus a cold room pack run through the night when everything else is quiet." },
+  { r:'user',  t:"What can we do about that?" },
+  { r:'agent', t:"Acoustic enclosures and the quieter units. We'd far rather price that in now than have you served an abatement notice a month after opening." },
+  { r:'user',  t:"Definitely — we can't risk being shut down" },
+  { r:'agent', t:"All our work is F-Gas certified and commissioned. When are you hoping to open?" },
+  { r:'user',  t:"September, we've already got a launch booked" },
+  { r:'agent', t:"Then we'd want to be in before the kitchen fit-out starts. Does the landlord need to approve the roof units?" },
+  { r:'user',  t:"That's already covered in the lease" },
+  { r:'agent', t:"That saves weeks. What's the postcode?" },
+  { r:'user',  t:"BN1 1UB" },
+  { r:'agent', t:"Roughly what budget have you set aside for the air con and refrigeration?" },
+  { r:'user',  t:"Somewhere around £38,000 to £45,000" },
+  { r:'agent', t:"That's realistic for the full package. Can I take your name?" },
+  { r:'user',  t:"Priya Raman" },
+  { r:'agent', t:"Thanks Priya — best number to reach you on?" },
+  { r:'user',  t:"07700 900744" },
+  { r:'agent', t:"And your email?" },
+  { r:'user',  t:"priya.raman@gmail.com" },
+  { r:'agent', t:"Thanks Priya — putting your quote together now." },
+  { r:'estimate' }
+]
+
+// 4. EST — itemised quote + lead card (items must sum to EST.mid)
+const EST = {
+  lower: 39_500, mid: 41_880, upper: 46_000,
+  status: 'PRIORITY',
+  items: [
+    { label:'Site survey, heat-load & ventilation design',    amt:   680 },
+    { label:'3× ceiling cassettes (dining) — supply',         amt: 4_650 },
+    { label:'Wall unit (bar area) — supply',                  amt:   640 },
+    { label:'2× outdoor condenser units — supply',            amt: 3_400 },
+    { label:'Kitchen extract canopy + fire-rated ductwork',   amt: 4_200 },
+    { label:'Heat recovery unit + supply air',                amt: 3_850 },
+    { label:'Cold room — walk-in panels, door & floor',       amt: 4_900 },
+    { label:'Cold room condensing unit & evaporator',         amt: 2_650 },
+    { label:'Refrigerant pipework & cabling runs',            amt: 2_900 },
+    { label:'Ductwork, grilles & attenuators',                amt: 1_750 },
+    { label:'Acoustic enclosures to roof condensers',         amt: 1_480 },
+    { label:'Condensate drainage & pumps',                    amt:   720 },
+    { label:'Electrical connections & isolators',             amt: 1_650 },
+    { label:'Installation — labour (3 engineers, 8 days)',    amt: 6_720 },
+    { label:'F-Gas commissioning, certification & handover',  amt:   780 },
+    { label:'Controls & scheduling (7-day, zoned)',           amt:   520 },
+    { label:'Making good & sundries',                         amt:   390 },
+  ],
+  customer: {
+    'Name':'Priya Raman',
+    'Phone':'07700 900744',
+    'Email':'priya.raman@gmail.com',
+  },
+  timingShort: 'Before Sep opening',
+  jobTags: ['Restaurant fit-out — 60 covers', 'Dining AC — 4 indoor units', 'Kitchen extract + heat recovery', 'Walk-in cold room', 'Acoustic enclosures (noise limit)', 'F-Gas certified'],
+  budget: { low: 38_000, high: 45_000 },
+  score: 96, scoreLabel: 'Premium Lead',
+  clientCity: 'Brighton', clientZip: 'BN1 1UB',
+  companyCity: 'Peacehaven', distanceMi: 7,
+}
+</script>
+<script src="/quote-agent.js"></script>
+</body>
+</html>
