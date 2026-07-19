@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JJK Gas Services — Instant Quote Demo</title>
+  <link rel="stylesheet" href="/quote-agent.css">
+</head>
+<body>
+<div class="page-center" id="hero"></div>
+<div id="widget-root"></div>
+
+<script>
+// 1. THEME — navy + orange, sampled from jjkgasservices.co.uk
+const THEME = {
+  bg:'#071828',      // core · page background behind the logo
+  dark:'#0a1f3c',    // core · brand navy
+  mid:'#12395f',     // core · mid navy
+  brand:'#1b5183',   // core · primary (buttons, user bubbles)
+  bright:'#f97d2e',  // core · brand orange accent (highlights)
+  dot:'#4ade80', chatBg:'#f4f6f9', tint:'#e8eef6', tint2:'#f0f5fb', line:'#dde5ef',
+  ink:'#0a1f3c', inkSoft:'#12395f', ring:'rgba(27,81,131,0.40)',
+  cta:'#f59e0b', cta2:'#d97706',
+}
+
+// 2. CONFIG
+const CONFIG = {
+  brand: {
+    name: 'JJK Gas Services',
+    sub: 'Boiler Installation · Repair · Servicing',
+    tagline: 'Wigan & Greater Manchester · Instant quote system',
+    initial: 'J',
+    logoSrc: 'jjk-logo.png',
+    fbHandle: '',
+    online: 'Online · Replies in seconds',
+  },
+  niche: 'new boiler',
+  tooltip: 'See how it works ▶',
+  currency: { symbol: '£', locale: 'en-GB' },
+  sendToOwnerLabel: 'Send to owner →',
+  calendly: 'https://calendly.com/pirint-milan/quoting-agent-sample',
+  ctaTitle: 'This is just a sample.',
+  ctaText: 'Want an actual working one? The live version would be built around JJK — your services, your prices, your questions, your Gas Safe number — answering and quoting real customers around the clock.',
+  ctaButton: 'Book a 15-min call →',
+}
+
+// 3. MSGS — the conversation (plays itself)
+const MSGS = [
+  { r:'agent', t:"Hi! Would you like a quote for your new boiler?" },
+  { r:'user',  t:"Yes please" },
+  { r:'agent', t:"Great. What have you got at the moment — combi, system, or an old back boiler?" },
+  { r:'user',  t:"An old system boiler with a tank in the airing cupboard" },
+  { r:'agent', t:"Understood. Roughly how old is it, and is it still running?" },
+  { r:'user',  t:"About 18 years. It still fires up but it's noisy and the bills are awful" },
+  { r:'agent', t:"That sounds about right for its age. Would you like to switch to a combi and free up the cupboard?" },
+  { r:'user',  t:"Yes, that's the plan" },
+  { r:'agent', t:"Good. How many bedrooms, and how many bathrooms or showers?" },
+  { r:'user',  t:"3 bedrooms, 1 bathroom and a downstairs loo" },
+  { r:'agent', t:"Perfect for a 30kW combi. How many radiators are on the system?" },
+  { r:'user',  t:"Ten" },
+  { r:'agent', t:"Noted. Is the boiler staying in the same spot, or moving?" },
+  { r:'user',  t:"Same spot — kitchen, on the outside wall" },
+  { r:'agent', t:"That keeps it simple. Any preference on make — we're Worcester Bosch approved and Ideal Max accredited?" },
+  { r:'user',  t:"Worcester if it's not much more" },
+  { r:'agent', t:"It isn't, and it carries a 12-year warranty. What's the property postcode?" },
+  { r:'user',  t:"WN6 0AB" },
+  { r:'agent', t:"Roughly what budget did you have in mind?" },
+  { r:'user',  t:"Somewhere between £3,500 and £4,500" },
+  { r:'agent', t:"And your name?" },
+  { r:'user',  t:"Sarah Whitfield" },
+  { r:'agent', t:"Thanks Sarah — best number to reach you on?" },
+  { r:'user',  t:"07700 900184" },
+  { r:'agent', t:"And your email?" },
+  { r:'user',  t:"s.whitfield@gmail.com" },
+  { r:'agent', t:"Thanks Sarah — putting your quote together now." },
+  { r:'estimate' }
+]
+
+// 4. EST — itemised quote + lead card (items sum exactly to EST.mid)
+const EST = {
+  lower: 3_450, mid: 3_940, upper: 4_400,
+  status: 'PRIORITY',
+  items: [
+    { label:'Worcester Bosch Greenstar 4000 30kW combi', amt: 1_450 },
+    { label:'Remove & dispose old system boiler',        amt:   220 },
+    { label:'Cylinder + tank removal, loft made good',   amt:   280 },
+    { label:'Gas supply upgrade to 22mm',                amt:   240 },
+    { label:'Condensate run + external termination',     amt:   110 },
+    { label:'Adey MagnaClean system filter',             amt:   130 },
+    { label:'Powerflush — 10 radiators',                 amt:   420 },
+    { label:'3× thermostatic radiator valves',           amt:   105 },
+    { label:'Smart heating control',                     amt:   195 },
+    { label:'Flue kit + external termination',           amt:   165 },
+    { label:'Installation labour (2 days)',              amt:   480 },
+    { label:'Gas Safe commissioning + Building Regs',    amt:    95 },
+    { label:'12-year warranty registration',             amt:    50 },
+  ],
+  customer: {
+    'Name':'Sarah Whitfield',
+    'Phone':'07700 900184',
+    'Email':'s.whitfield@gmail.com',
+  },
+  timingShort: 'ASAP · within 2 weeks',
+  jobTags: ['System → combi conversion', '30kW Worcester Bosch', '3 bed / 1 bath', '10 radiators', 'Powerflush'],
+  budget: { low: 3_500, high: 4_500 },
+  score: 95, scoreLabel: 'Premium Lead',
+  clientCity: 'Standish', clientZip: 'WN6 0AB',
+  companyCity: 'Wigan', distanceMi: 4,
+}
+</script>
+<script src="/quote-agent.js"></script>
+</body>
+</html>
